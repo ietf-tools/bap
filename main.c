@@ -83,12 +83,12 @@ printobj_r(object *o, int parenttype)
 		case T_TERMSTR:
 			printrep(&o->u.e.repetition);
 			if (o->u.e.e.termstr.flags & F_CASESENSITIVE) {
-				char *p = o->u.e.e.termstr.str;
+				unsigned char *p = o->u.e.e.termstr.str;
 				char sep;
 				printf("%%");
 				sep = 'x';
 				while (*p) {
-					printf("%c%x", sep, *p++);
+					printf("%c%02X", sep, *p++);
 					sep = '.';
 				}
 			} else {
@@ -97,8 +97,9 @@ printobj_r(object *o, int parenttype)
 			break;
 		case T_TERMRANGE:
 			printrep(&o->u.e.repetition);
-			printf("%%x%x-%x", o->u.e.e.termrange.lo,
-				o->u.e.e.termrange.hi);
+			printf("%%x%02X-%02X",
+				(unsigned char)o->u.e.e.termrange.lo,
+				(unsigned char)o->u.e.e.termrange.hi);
 			break;
 		case T_PROSE:
 			printf("<%s>", o->u.proseval);
