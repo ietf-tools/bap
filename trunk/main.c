@@ -5,7 +5,7 @@
 #include "common.h"
 
 static const char rcsid[] =
- "$Fenner: abnf-parser/main.c,v 1.13 2002/08/08 05:24:45 fenner Exp $";
+ "$Fenner: abnf-parser/main.c,v 1.14 2004/03/18 01:10:39 fenner Exp $";
 
 static void printobj_r(object *, int, int);
 
@@ -166,9 +166,11 @@ printobj_r(object *o, int parenttype, int tflag)
 			if (tflag)
 				printf("{RULE}");
 			printrep(&o->u.e.repetition);
-			printf("%s", o->u.e.e.rule.name);
-			if (o->u.e.e.rule.rule)
+			if (o->u.e.e.rule.rule) {
+				printf("%s", o->u.e.e.rule.rule->name);
 				o->u.e.e.rule.rule->used = 1;
+			} else
+				printf("%s", o->u.e.e.rule.name);
 			break;
 		case T_GROUP:
 			if (tflag)
