@@ -4,7 +4,9 @@
 #include <unistd.h>
 #include "common.h"
 
-void printobj(object *, int);
+static const char rcsid[] =
+ "$Id$";
+
 static void printobj_r(object *, int, int);
 
 #define	MAXRULE		1000	/* XXX */
@@ -14,11 +16,12 @@ struct rule *rules = NULL;
 int cflag = 0;		/* suppress line number comments */
 int tflag = 0;		/* print type info */
 int permissive = 1;	/* Be permissive (e.g. accept '|') */
+int qflag = 0;		/* quiet */
 
 void
 usage(void)
 {
-	fprintf(stderr, "usage: p [-d]\n");
+	fprintf(stderr, "usage: p [-cdt]\n");
 	exit(1);
 }
 
@@ -34,7 +37,7 @@ main(int argc, char **argv)
 #endif
 	hcreate(MAXRULE);
 
-	while ((ch = getopt(argc, argv, "cdt")) != -1) {
+	while ((ch = getopt(argc, argv, "cdtq")) != -1) {
 		switch (ch) {
 		case 'c':
 			cflag++;
@@ -52,6 +55,14 @@ main(int argc, char **argv)
 			tflag++;
 			break;
 
+		case 'p':
+			permissive = 0;
+			break;
+
+		case 'q':
+			qflag++;
+			break;
+
 		default:
 			usage();
 		}
@@ -59,20 +70,24 @@ main(int argc, char **argv)
 	argc -= optind;
 	argv += optind;
 
+	if (argc > 0)
+		usage();
+
 	yyparse();
-	for (r = rules; r; r = r->next) {
-		if (r->rule) {
-			printf("%s = ", r->name);
-			printobj(r->rule, tflag);
-			if (!cflag)
-				printf(" ; line %d", r->line);
-			printf("\n");
-		} else {
-			printf("; %s = <UNDEFINED>\n", r->name);
+	if (!qflag)
+		for (r = rules; r; r = r->next) {
+			if (r->rule) {
+				printf("%s = ", r->name);
+				printobj(r->rule, tflag);
+				if (!cflag)
+					printf(" ; line %d", r->line);
+				printf("\n");
+			} else {
+				printf("; %s = <UNDEFINED>\n", r->name);
+			}
+			if (r->next == rules)
+				break;
 		}
-		if (r->next == rules)
-			break;
-	}
 	hdestroy();
 	exit(0);
 }
