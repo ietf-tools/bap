@@ -71,6 +71,7 @@ rule:	recover RULENAME { defline = yylineno } definedas rulerest {
 
 definedas: starcwsp EQSLASH starcwsp
 	| starcwsp '=' starcwsp
+	| starcwsp '=' starcwsp CRLF { yyerror("Empty rule"); YYERROR; }
 	| starcwsp repetition { yyerror("Got definitions, expecting '=' or '=/'"); YYERROR; }
 	| starcwsp CRLF { yyerror("Got EOL, expecting '=' or '=/'"); YYERROR; }
 	;
@@ -111,7 +112,17 @@ elements:
 		$$->u.alternation.right = $5;
 		}
 	| elements repetition {
+		object *o = $1;
 		yyerror("Concatenation of adjacent elements!?");
+		printf("; ... trying to concatenate ");
+		if (o->type == T_ALTERNATION)
+			o = o->u.alternation.right;
+		while (o->next)	/* n**2, do this better */
+			o = o->next;
+		printobj(o);
+		printf(" with ");
+		printobj($2);
+		printf("\n");
 		YYERROR;
 		}
 	| elements starcwsp '=' {
@@ -133,6 +144,10 @@ repetition:
 				if ($$->u.e.repetition.lo != 0)
 					$$->u.e.repetition.lo = $1.lo;
 				$$->u.e.repetition.hi = $1.hi;
+				if ($1.hi < $1.lo && $1.hi != -1)
+					yyerror("Repeat range swapped, should be min*max");
+				if ($1.hi == 0)
+					yyerror("Absolute repeat count of zero means this element may not occur at all");
 				}
 	| REPEAT cwsp		{
 				yyerror("No whitespace allowed between repeat and element.");
@@ -160,6 +175,13 @@ element:
 	| group	
 	| option
 	| CHARVAL		{
+				char *p = $1;
+				if (*$1)
+					p += strlen($1) - 1;
+				if (*p == '\n' || *p == '\r') {
+					yyerror("unterminated quoted-string");
+					YYERROR;
+				}
 				$$ = newobj(T_TERMSTR);
 				$$->u.e.e.termstr.str = $1;
 				$$->u.e.e.termstr.flags = 0;
