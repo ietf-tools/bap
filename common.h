@@ -1,6 +1,6 @@
 /*
  * Bill's ABNF Parser
- * $Fenner$
+ * $Fenner: abnf-parser/common.h,v 1.6 2002/07/30 17:05:01 fenner Exp $
  */
 
 struct range {
@@ -13,6 +13,7 @@ struct rule {
 	char *lowername;	/* for hash key */
 	int line;		/* line of definition */
 	struct object *rule;	/* definition */
+	int used;		/* was it referenced? */
 	struct rule *next;	/* doubly */
 	struct rule *prev;	/* linked list */
 };
