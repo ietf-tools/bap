@@ -5,7 +5,7 @@
 #include "common.h"
 
 static const char rcsid[] =
- "$Fenner: abnf-parser/main.c,v 1.16 2004/06/25 20:37:06 fenner Exp $";
+ "$Fenner: abnf-parser/main.c,v 1.17 2004/06/28 22:58:23 fenner Exp $";
 
 static void printobj_r(object *, int, int);
 static void canonify(struct rule *);
@@ -107,21 +107,13 @@ canonify(struct rule *rules)
 {
 	struct rule *r;
 
-	printf("-> entering canonify\n");
 	for (r = rules; r; r = r->next) {
 		if (!r->rule)
 			continue;
-		printf("About to work on rule %s: ", r->name);
-		printobj(r->rule, 0);
-		printf("\n");
 		canonify_r(&r->rule);
-		printf("Came back as: ");
-		printobj(r->rule, 0);
-		printf("\n");
 		if (r->next == rules)
 			break;
 	}
-	printf("-> leaving canonify\n");
 }
 
 /* XXX may need to modify in the future? */
