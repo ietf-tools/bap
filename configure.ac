@@ -1,7 +1,6 @@
-dnl $Fenner: abnf-parser/configure.ac,v 1.3 2004/09/17 01:26:57 fenner Exp $
+dnl $Fenner: abnf-parser/configure.ac,v 1.4 2004/09/17 01:34:45 fenner Exp $
 
 AC_INIT(bap, 1.0)
-AC_REVISION($Revision$)
 
 AC_PROG_CC
 AC_PROG_YACC
