@@ -10,7 +10,7 @@
 #include "common.h"
 
 static const char rcsid[] =
- "$Fenner: abnf-parser/parser.y,v 1.13 2002/07/30 17:05:00 fenner Exp $";
+ "$Fenner: abnf-parser/parser.y,v 1.14 2004/05/19 15:37:08 fenner Exp $";
 
 extern int yylineno, yycolumn;
 
@@ -245,6 +245,9 @@ element:
 	| PROSEVAL		{
 				$$ = newobj(T_PROSE);
 				$$->u.e.e.proseval = $1;
+				if (strcmp($1, "\"") == 0) {
+					mywarn("Suggest DQUOTE or %%x22 instead of <\">.");
+				}
 				}
 	;
 
