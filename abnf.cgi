@@ -4,7 +4,7 @@
 # Sooooo many things to want to fix up.
 # Bill Fenner <fenner@fenron.com> 23 June 2004
 #
-# $Fenner: abnf-parser/abnf.cgi,v 1.2 2004/06/24 19:34:06 fenner Exp $
+# $Fenner: abnf-parser/abnf.cgi,v 1.3 2004/09/16 18:34:15 fenner Exp $
 #
 use CGI qw/:standard/;
 
@@ -19,7 +19,7 @@ if (param("abnf")) {
 	open(ORIG, ">/tmp/abnf1");
 	print ORIG $abnf, "\n";
 	close(ORIG);
-	open(ERRORS, "/home/fenner/bin/p -c < $tmpabnf 2>&1 >$tmpparsed |");
+	open(ERRORS, "/home/fenner/bin/bap < $tmpabnf 2>&1 >$tmpparsed |");
 	@errors = <ERRORS>;
 	close(ERRORS);
 	if (@errors) {
