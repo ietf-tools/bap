@@ -59,9 +59,9 @@ typedef struct object {
 				    char lo;
 				    char hi;
 			    } termrange;
+			    char *proseval;
 			} e;
 		} e;
-		char *proseval;
 	} u;
 } object;
 

@@ -12,6 +12,7 @@ static void printobj_r(object *, int);
 struct rule *rules = NULL;
 
 int cflag = 0;		/* suppress line number comments */
+int tflag = 0;		/* print type info */
 
 void
 usage(void)
@@ -32,7 +33,7 @@ main(int argc, char **argv)
 #endif
 	hcreate(MAXRULE);
 
-	while ((ch = getopt(argc, argv, "cd")) != -1) {
+	while ((ch = getopt(argc, argv, "cdt")) != -1) {
 		switch (ch) {
 		case 'c':
 			cflag++;
@@ -44,6 +45,10 @@ main(int argc, char **argv)
 #else
 			fprintf(stderr, "Rebuild with -DYYDEBUG to use -d.\n");
 #endif
+			break;
+
+		case 't':
+			tflag++;
 			break;
 
 		default:
@@ -95,6 +100,14 @@ printobj(object *o)
 				 * around the top level. */
 }
 
+/*
+ * No paren needed around a group that's:
+ * - not concatenation (no next)
+ * - not an ALTERNATION
+ * - got a repeat count of 1
+ */
+#define	NOPAREN(o)	((o->next == NULL) && (o->type != T_ALTERNATION) && (o->u.e.repetition.lo == 1 && o->u.e.repetition.hi == 1))
+
 static void
 printobj_r(object *o, int parenttype)
 {
@@ -106,9 +119,10 @@ printobj_r(object *o, int parenttype)
 		printf("( ");
 	}
 	while (o) {
-/*		printf("<%d>", o->type);*/
 		switch (o->type) {
 		case T_ALTERNATION:
+			if (tflag)
+				printf("{ALTERNATION}");
 			if (o->next)
 				printf("( ");
 			printobj_r(o->u.alternation.left, o->type);
@@ -118,17 +132,20 @@ printobj_r(object *o, int parenttype)
 				printf(" )");
 			break;
 		case T_RULE:
+			if (tflag)
+				printf("{RULE}");
 			printrep(&o->u.e.repetition);
 			printf("%s", o->u.e.e.rule.name);
 			break;
 		case T_GROUP:
+			if (tflag)
+				printf("{GROUP}");
 			if (o->u.e.repetition.lo == 0 &&
 			    o->u.e.repetition.hi == 1) {
 				printf("[ ");
 			} else {
 				printrep(&o->u.e.repetition);
-				/* don't print parens if a group of 1 */
-				if (o->u.e.e.group->next)
+				if (!NOPAREN(o->u.e.e.group))
 					printf("( ");
 			}
 			printobj_r(o->u.e.e.group, o->type);
@@ -136,11 +153,13 @@ printobj_r(object *o, int parenttype)
 			    o->u.e.repetition.hi == 1) {
 				printf(" ]");
 			} else {
-				if (o->u.e.e.group->next)
+				if (!NOPAREN(o->u.e.e.group))
 					printf(" )");
 			}
 			break;
 		case T_TERMSTR:
+			if (tflag)
+				printf("{TERMSTR}");
 			printrep(&o->u.e.repetition);
 			if (o->u.e.e.termstr.flags & F_CASESENSITIVE) {
 				unsigned char *p = o->u.e.e.termstr.str;
@@ -156,13 +175,21 @@ printobj_r(object *o, int parenttype)
 			}
 			break;
 		case T_TERMRANGE:
+			if (tflag)
+				printf("{TERMRANGE}");
 			printrep(&o->u.e.repetition);
 			printf("%%x%02X-%02X",
 				(unsigned char)o->u.e.e.termrange.lo,
 				(unsigned char)o->u.e.e.termrange.hi);
 			break;
 		case T_PROSE:
-			printf("<%s>", o->u.proseval);
+			if (tflag)
+				printf("{PROSE}");
+			printrep(&o->u.e.repetition);
+			printf("<%s>", o->u.e.e.proseval);
+			break;
+		default:
+			printf("{UNKNOWN OBJECT TYPE %d}", o->type);
 			break;
 		}
 		if (o->next)
