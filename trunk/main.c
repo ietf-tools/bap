@@ -28,6 +28,8 @@
  * USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH
  * DAMAGE.
  */
+
+#include "config.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <search.h>
@@ -35,7 +37,7 @@
 #include "common.h"
 
 static const char rcsid[] =
- "$Fenner: abnf-parser/main.c,v 1.19 2004/09/17 01:04:26 fenner Exp $";
+ "$Fenner: abnf-parser/main.c,v 1.20 2004/09/17 01:22:40 fenner Exp $";
 static const char versionstring[] = "1.0";
 
 static void printobj_r(object *, int, int);

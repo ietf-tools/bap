@@ -30,6 +30,7 @@
  * DAMAGE.
  */
 
+#include "config.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdarg.h>
@@ -37,7 +38,7 @@
 #include "common.h"
 
 static const char rcsid[] =
- "$Fenner: abnf-parser/parser.y,v 1.16 2004/09/17 00:14:34 fenner Exp $";
+ "$Fenner: abnf-parser/parser.y,v 1.17 2004/09/17 01:22:40 fenner Exp $";
 
 extern int yylineno, yycolumn;
 
