@@ -1,3 +1,33 @@
+/*
+ * Bill's ABNF Parser
+ * Copyright 2002-2004 William C. Fenner <fenner@research.att.com>
+ *  All rights reserved.
+ * 
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions
+ * are met:
+ * 1. Redistributions of source code must retain the above copyright
+ *    notice, this list of conditions and the following disclaimer.
+ * 2. Redistributions in binary form must reproduce the above copyright
+ *    notice, this list of conditions and the following disclaimer in the
+ *    documentation and/or other materials provided with the distribution.
+ * 3. Neither the name of the author nor the names of contributors
+ *    may be used to endorse or promote products derived from this software
+ *    without specific prior written permission.
+ * 
+ * THIS SOFTWARE IS PROVIDED BY WILLIAM C. FENNER ``AS IS'' AND
+ * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO,
+ * THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
+ * PURPOSE ARE DISCLAIMED.  IN NO EVENT SHALL WILLIAM C. FENNER OR HIS
+ * BROTHER B1FF BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL,
+ * EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
+ * PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR
+ * PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY
+ * OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+ * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE
+ * USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH
+ * DAMAGE.
+ */
 #include <stdio.h>
 #include <stdlib.h>
 #include <search.h>
@@ -5,7 +35,8 @@
 #include "common.h"
 
 static const char rcsid[] =
- "$Fenner: abnf-parser/main.c,v 1.18 2004/06/28 23:01:06 fenner Exp $";
+ "$Fenner: abnf-parser/main.c,v 1.19 2004/09/17 01:04:26 fenner Exp $";
+static const char versionstring[] = "1.0";
 
 static void printobj_r(object *, int, int);
 static void canonify(struct rule *);
@@ -25,7 +56,8 @@ int canon = 1;		/* canonify */
 void
 usage(void)
 {
-	fprintf(stderr, "usage: p [-ckntq]\n");
+	fprintf(stderr, "Bill's ABNF Parser version %s\n", versionstring);
+	fprintf(stderr, "usage: bap [-ckntq]\n");
 	fprintf(stderr, " -c : include rule definition line # in comment\n");
 	fprintf(stderr, " -k : add comments for printable characters specified as %%x\n");
 	fprintf(stderr, " -n : don't \"canonify\" result\n");
@@ -65,7 +97,7 @@ main(int argc, char **argv)
 			break;
 
 		case 'n':
-			canonify = 0;
+			canon = 0;
 			break;
 
 		case 't':
