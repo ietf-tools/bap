@@ -10,6 +10,7 @@
 
 int yylineno = 1;
 int yycolumn = 0;
+extern int permissive;
 
 char badchar;
 
@@ -18,17 +19,25 @@ static char *scanstr(char *, int);
 
 %}
 
-bit	[01]
-digit	[0-9]
-hexdig	[0-9A-Fa-f]
+bit		[01]
+digit		[0-9]
+hexdig		[0-9A-Fa-f]
 
 rulename	[A-Za-z][-0-9A-Za-z]*
-wsp	[ \t]
+wsp		[ \t]
+
+/* *(%x20-21 / %x23-7E) */
+charval		[ !#-~]*
+
+/* *(%x20-3D / %x3F-7E) */
+proseval	[ -=?-~]*
 
 mycrlf	(\n\r|\r\n|\r|\n)
 
 %s SKIP
 
+/* line number isn't quite being updated properly.
+   suspect unterminated charval and prosevals. */
 %%
 <SKIP>.*{mycrlf}	{ 	char buf[80];
 				sprintf(buf, "Illegal character `%c' - skipping to end of line", badchar);
@@ -37,20 +46,26 @@ mycrlf	(\n\r|\r\n|\r|\n)
 				yycolumn = 0;
 				BEGIN(INITIAL);
 				return CRLF; }
-\"[ !#-\177]*["\r\n]	{
+\"{charval}["\r\n]	{
 			char *p;
 			yycolumn += strlen(yytext);
 			yylval.string = strdup(yytext + 1);
 			p = &yylval.string[strlen(yylval.string) - 1];
-			if (*p == '"')
-				*p = '\0';
-			/* else warn about unterminated string */
+			if (*p != '"')
+				yyerror("unterminated char-val");
+			*p = '\0';
+			if (*yylval.string == '\0')
+/* warning only */		yyerror("zero-length char-val");
 			return CHARVAL;
 			}
-\<[ -=?-\177]*>		{
+\<{proseval}[>\r\n]	{
+			char *p;
 			yycolumn += strlen(yytext);
 			yylval.string = strdup(yytext + 1);
-			yylval.string[strlen(yylval.string) - 1] = '\0';
+			p = &yylval.string[strlen(yylval.string) - 1];
+			if (*p != '>')
+				yyerror("unterminated prose-val");
+			*p = '\0';
 			return PROSEVAL;
 			}
 {rulename}		{
@@ -68,6 +83,8 @@ mycrlf	(\n\r|\r\n|\r|\n)
 			yylval.string = scanstr(yytext + 2, 2);
 			return BINVAL;
 			}
+%b.			{ yyerror("bad bit value");
+			  badchar = yytext[2]; BEGIN(SKIP); }
 %d{digit}+-{digit}+	{
 			yycolumn += strlen(yytext);
 			scanrange(yytext + 2, 10, &yylval.range);
@@ -78,6 +95,8 @@ mycrlf	(\n\r|\r\n|\r|\n)
 			yylval.string = scanstr(yytext + 2, 10);
 			return DECVAL;
 			}
+%d.			{ yyerror("bad decimal value");
+			  badchar = yytext[2]; BEGIN(SKIP); }
 %x{hexdig}+-{hexdig}+	{
 			yycolumn += strlen(yytext);
 			scanrange(yytext + 2, 16, &yylval.range);
@@ -88,6 +107,8 @@ mycrlf	(\n\r|\r\n|\r|\n)
 			yylval.string = scanstr(yytext + 2, 16);
 			return HEXVAL;
 			}
+%x.			{ yyerror("bad hex value");
+			  badchar = yytext[2]; BEGIN(SKIP); }
 {digit}*\*{digit}*	{
 			char *ep;
 
@@ -138,7 +159,12 @@ mycrlf	(\n\r|\r\n|\r|\n)
 				return CWSP; }
 {mycrlf}		{ yylineno++; yycolumn = 0; return CRLF; }
 [][()=/]		{ yycolumn++; return yytext[0]; }
-\|			{ yycolumn++; /* if (!permissive) BEGIN(SKIP); */ return yytext[0]; }
+\|			{ yycolumn++;
+			  if (!permissive) {
+				badchar = yytext[0];
+				BEGIN(SKIP);
+			  }
+			  return yytext[0]; }
 .			{ yycolumn++; badchar = yytext[0]; BEGIN(SKIP); }
 %%
 
