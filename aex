@@ -1,0 +1,51 @@
+#!/usr/bin/perl
+#
+# Heuristics to extract ABNF from an I-D or RFC.
+# Bill Fenner <fenner@fenron.com> 26 September 2004
+#
+# $Fenner$
+#
+use strict;
+my($inabnf, $indent, $curindent, $spaces, $newrule);
+my($blanklines, $top);
+
+$indent = 0;
+$inabnf = 0;
+$blanklines = $top = 0;
+while (<>) {
+	chomp;
+	if ($inabnf == 0 && m,^(\s*)\S+\s*=/?,) {
+		$inabnf = 1;
+	}
+	next unless $inabnf;
+	if (/^$/) {
+		$blanklines++;
+		next;
+	} elsif (/\[[Pp]age [0-9ivx]+\]\s*$/ ||
+		 /\014/ ||
+		 /^\s*(Internet.Draft|RFC).*\d+\s*$/i) {
+		$top = 1;
+		next;
+	}
+	if ($blanklines && !$top) {
+		print "\n" x $blanklines;
+	}
+	$blanklines = $top = 0;
+	# bewlow regex for rule name permits underscores;
+	# rfc2234 doesn't but some grammars try
+	($spaces, $newrule) = m,^(\s*)([A-Za-z][-0-9A-Za-z_]+\s*=/?)?,;
+	$curindent = length($spaces);
+	if ($newrule) {
+		# new rule - indentation can change
+		if ($indent != 0 && $curindent != $indent) {
+			print " " x $indent, "; XXX recommend keeping indentation consistent\n";
+		}
+		$indent = $curindent;
+	} elsif (/\S/ && $curindent <= $indent) {
+		# all-whitespace lines stay
+		#print "; terminating ABNF with $curindent $_\n";
+		$inabnf = 0;
+		next;
+	}
+	print $_, "\n";
+}
