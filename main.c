@@ -5,9 +5,11 @@
 #include "common.h"
 
 static const char rcsid[] =
- "$Fenner: abnf-parser/main.c,v 1.15 2004/06/24 19:56:18 fenner Exp $";
+ "$Fenner: abnf-parser/main.c,v 1.16 2004/06/25 20:37:06 fenner Exp $";
 
 static void printobj_r(object *, int, int);
+static void canonify(struct rule *);
+static void canonify_r(struct object **);
 
 #define	MAXRULE		1000	/* XXX */
 
@@ -75,6 +77,7 @@ main(int argc, char **argv)
 
 	yyparse();
 	if (!qflag) {
+		canonify(rules);
 		for (r = rules; r; r = r->next) {
 			if (r->rule) {
 				printf("%s = ", r->name);
@@ -97,6 +100,80 @@ main(int argc, char **argv)
 	}
 	hdestroy();
 	exit(0);
+}
+
+void
+canonify(struct rule *rules)
+{
+	struct rule *r;
+
+	printf("-> entering canonify\n");
+	for (r = rules; r; r = r->next) {
+		if (!r->rule)
+			continue;
+		printf("About to work on rule %s: ", r->name);
+		printobj(r->rule, 0);
+		printf("\n");
+		canonify_r(&r->rule);
+		printf("Came back as: ");
+		printobj(r->rule, 0);
+		printf("\n");
+		if (r->next == rules)
+			break;
+	}
+	printf("-> leaving canonify\n");
+}
+
+/* XXX may need to modify in the future? */
+void
+canonify_r(struct object **op)
+{
+	struct object *o = *op;
+	while (o) {
+		switch (o->type) {
+		case T_ALTERNATION:
+			canonify_r(&o->u.alternation.left);
+			canonify_r(&o->u.alternation.right);
+			break;
+		case T_RULE:
+			/* nothing to do */
+			break;
+		case T_GROUP:
+			canonify_r(&o->u.e.e.group);
+			break;
+		case T_TERMSTR:
+			while (o->next && o->next->type == T_TERMSTR &&
+			    ((o->u.e.e.termstr.flags & F_CASESENSITIVE) ==
+			     (o->next->u.e.e.termstr.flags & F_CASESENSITIVE))) {
+				int len = strlen(o->u.e.e.termstr.str) + strlen(o->next->u.e.e.termstr.str);
+				char *p = malloc(len + 1);
+				strcpy(p, o->u.e.e.termstr.str);
+				strcat(p, o->next->u.e.e.termstr.str);
+				free(o->u.e.e.termstr.str);
+				o->u.e.e.termstr.str = p;
+				/* XXX leak o->next */
+				o->next = o->next->next;
+			}
+			if (o->u.e.e.termstr.flags & F_CASESENSITIVE) {
+				int anybad = 0;
+				char *p;
+				for (p = o->u.e.e.termstr.str; *p; p++) {
+					if (isalpha(*p) || *p == '"' || !isprint(*p)) {
+						anybad = 1;
+						break;
+					}
+				}
+				if (anybad == 0)
+					o->u.e.e.termstr.flags &= ~F_CASESENSITIVE;
+			}
+		case T_TERMRANGE:
+		case T_PROSE:
+		default:
+			/* nothing to do */
+			break;
+		}
+		o = o->next;
+	}
 }
 
 void
@@ -201,12 +278,16 @@ printobj_r(object *o, int parenttype, int tflag)
 			if (o->u.e.e.termstr.flags & F_CASESENSITIVE) {
 				unsigned char *p = o->u.e.e.termstr.str;
 				char sep;
+				int allprintable = 1;
 				printf("%%");
 				sep = 'x';
 				while (*p) {
+					if (!isgraph(*p)) allprintable = 0;
 					printf("%c%02X", sep, *p++);
 					sep = '.';
 				}
+				if (allprintable)
+					printf(" ; %s\n", o->u.e.e.termstr.str);
 			} else {
 				printf("%c%s%c", '"', o->u.e.e.termstr.str, '"');
 			}
@@ -218,6 +299,12 @@ printobj_r(object *o, int parenttype, int tflag)
 			printf("%%x%02X-%02X",
 				(unsigned char)o->u.e.e.termrange.lo,
 				(unsigned char)o->u.e.e.termrange.hi);
+			if (isprint((unsigned char)o->u.e.e.termrange.lo) &&
+			    isprint((unsigned char)o->u.e.e.termrange.hi)) {
+				printf(" ; '%c'-'%c'\n",
+					(unsigned char)o->u.e.e.termrange.lo,
+					(unsigned char)o->u.e.e.termrange.hi);
+			}
 			break;
 		case T_PROSE:
 			if (tflag)
