@@ -4,7 +4,7 @@
 # Sooooo many things to want to fix up.
 # Bill Fenner <fenner@fenron.com> 23 June 2004
 #
-# $Fenner$
+# $Fenner: abnf-parser/abnf.cgi,v 1.2 2004/06/24 19:34:06 fenner Exp $
 #
 use CGI qw/:standard/;
 
@@ -36,6 +36,12 @@ if (param("abnf")) {
 				$col = $2;
 				if ($lines[$line - 1]) {
 					$lastline = $line;
+					# Column 0 might mean the end of the
+					# previous line, so make sure that
+					# we get that.
+					if ($col == 0) {
+						$line--;
+					}
 					while ($line > 0 && $lines[$line - 1] =~ /^(\s|$)/) {
 						$line--;
 					}
@@ -47,6 +53,19 @@ if (param("abnf")) {
 				}
 			}
 			print htmlify($error);
+			if ($error =~ /on line (\d+)/) {
+				$line = $1;
+				# This one is the beginning of the rule.
+				$lastline = $line;
+				while ($lastline < $#lines && $lines[$lastline] =~ /^(\s|$)/) {
+					$lastline++;
+				}
+				while ($line <= $lastline) {
+					printf("%${numwidth}d: %s\n", $line, htmlify($lines[$line - 1]));
+					$line++;
+				}
+			}
+			print "\n";
 		}
 		print "</pre>\n";
 	} else {
