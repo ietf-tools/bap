@@ -1,0 +1,18 @@
+#
+# $Fenner$
+#
+
+OBJS=	parser.o scanner.o main.o @LIBOBJS@
+
+D=	-g
+CFLAGS=	@DEFS@ -DYYDEBUG ${D}
+YACC=	@YACC@ -v
+
+p:	${OBJS}
+	${CC} -o $@ ${D} ${OBJS} -ll
+
+scanner.c:	scanner.l
+parser.c:	parser.y
+
+clean:
+	rm -f p scanner.c parser.c $(OBJS)
