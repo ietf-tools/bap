@@ -1,12 +1,12 @@
 #
-# $Fenner: abnf-parser/Makefile.in,v 1.2 2004/09/17 01:07:59 fenner Exp $
+# $Fenner: abnf-parser/Makefile.in,v 1.3 2004/09/17 01:13:33 fenner Exp $
 #
 
 OBJS=	parser.o scanner.o main.o @LIBOBJS@
 
-DEBUG=	-g
-CFLAGS=	@DEFS@ -DYYDEBUG ${DEBUG}
+CFLAGS=	@CFLAGS@ @DEFS@ -DYYDEBUG
 YACC=	@YACC@ -v
+CC=	@CC@
 
 bap:	${OBJS}
 	${CC} -o $@ ${DEBUG} ${OBJS} -ll
