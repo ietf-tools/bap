@@ -3,7 +3,7 @@
 # Heuristics to extract ABNF from an I-D or RFC.
 # Bill Fenner <fenner@fenron.com> 26 September 2004
 #
-# $Fenner$
+# $Fenner: abnf-parser/aex,v 1.3 2004/09/27 04:24:28 fenner Exp $
 #
 use strict;
 my($inabnf, $indent, $curindent, $spaces, $newrule);
@@ -19,7 +19,7 @@ while (<>) {
 	chomp;
 	# bewlow regex for rule name permits underscores;
 	# rfc2234 doesn't but some grammars use it anyway
-	($spaces, $newrule) = m,^(\s*)([A-Za-z][-0-9A-Za-z_]+\s*=/?)?,;
+	($spaces, $newrule) = m,^(\s*)([A-Za-z][-0-9A-Za-z_]*\s*=/?)?,;
 	if ($inabnf == 0 && $newrule) {
 		$inabnf = 1;
 	}
