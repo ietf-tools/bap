@@ -26,8 +26,11 @@ printrep(struct range *rep)
 		return;
 	if (rep->lo > 0)
 		printf("%d", rep->lo);
-	if (rep->lo == rep->hi)
+	if (rep->lo == rep->hi) {
+		if (rep->lo == 0)
+			printf("0");
 		return;
+	}
 	printf("*");
 	if (rep->hi > 0)
 		printf("%d", rep->hi);
