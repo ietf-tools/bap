@@ -1,4 +1,7 @@
-dnl $Fenner: abnf-parser/configure.ac,v 1.4 2004/09/17 01:34:45 fenner Exp $
+dnl $Fenner: abnf-parser/configure.ac,v 1.5 2004/09/17 03:14:37 fenner Exp $
+dnl
+dnl Boy does modern autoconf make it hard to have a small ./configure.
+dnl Sorry that it's so huge for almost no configuration.
 
 AC_INIT(bap, 1.0)
 
