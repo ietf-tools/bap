@@ -10,7 +10,7 @@
 #include "common.h"
 
 static const char rcsid[] =
- "$Fenner$";
+ "$Fenner: abnf-parser/parser.y,v 1.13 2002/07/30 17:05:00 fenner Exp $";
 
 extern int yylineno, yycolumn;
 
@@ -72,7 +72,10 @@ rule:	recover RULENAME { defline = yylineno; } definedas rulerest {
 
 		r = findrule($2);
 
-		if ($4 == 0) {	/* = */
+		if ($4 == 0 || r->name == NULL || r->rule == NULL) {	/* = */
+			if ($4) {
+				mywarn("Rule %s does not yet exist; treating /= as =", $2);
+			}
 			if (r->name && strcmp(r->name, $2))
 				mywarn("Rule %s previously %s as %s", $2,
 					r->rule ? "defined" : "referred to", r->name);
@@ -98,10 +101,6 @@ rule:	recover RULENAME { defline = yylineno; } definedas rulerest {
 		} else {	/* =/ */
 			object *tmp;
 
-			if (r->name == NULL || r->rule == NULL) {
-				mywarn("Rule %s does not yet exist so cannot be incrementally added to", $2);
-				YYERROR;
-			}
 			tmp = newobj(T_ALTERNATION);
 			tmp->u.alternation.left = r->rule;
 			tmp->u.alternation.right = $5;
