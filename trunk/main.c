@@ -51,7 +51,8 @@ printrep(struct range *rep)
 void
 printobj(object *o)
 {
-	printobj_r(o, 0);
+	printobj_r(o, T_GROUP);	/* T_GROUP means don't put grouping characters
+				 * around the top level. */
 }
 
 static void
