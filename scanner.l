@@ -30,13 +30,14 @@
  * DAMAGE.
  */
 
+#include "config.h"
 #include <stdlib.h>
 #include <string.h>
 #include "common.h"
 #include "y.tab.h"
 
 static const char rcsid[] =
- "$Fenner: abnf-parser/scanner.l,v 1.10 2004/09/17 00:13:13 fenner Exp $";
+ "$Fenner: abnf-parser/scanner.l,v 1.11 2004/09/17 01:22:40 fenner Exp $";
 
 int yylineno = 1;
 int yycolumn = 0;
