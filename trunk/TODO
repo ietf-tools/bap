@@ -15,3 +15,24 @@ e.g., %x30-39 ; "0" - "9"
 
 handle syntax error of missing rule, just leading "="
  (initial attempts caused shift/reduce or reduce/reduce conflicts!)
+
+canonify "a" / "A" (really "a"/foo/bar/baz/zip/dop/"A")
+
+canonify "foo / foo"
+
+fix output for
+prose = <this is unterminated
+	but it continues [5] here>
+        ; wtf is up with this confusing stuff
+1:30: unterminated prose-val
+                             ^
+2:29: syntax error
+                            ^
+3:46: Illegal character '>' - skipping to end of line
+                                             ^
+-- why do we get the illegal character there?  The syntax error
+   seems to confuse the SKIP stuff, which may have tokenized the
+   "here>" and set skip but then the grammar syntax error confused
+   things?
+
+
