@@ -6,10 +6,6 @@ word-wrap output.
 
 intelligently word-wrap output. (is there such a thing?)
 
-fix output for
-hello = goodbye ( foo
-goodbye = blah
-
 handle syntax error of missing rule, just leading "="
  (initial attempts caused shift/reduce or reduce/reduce conflicts!)
 
