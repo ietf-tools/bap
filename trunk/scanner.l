@@ -37,7 +37,7 @@
 #include "y.tab.h"
 
 static const char rcsid[] =
- "$Fenner: abnf-parser/scanner.l,v 1.12 2004/09/17 01:34:45 fenner Exp $";
+ "$Fenner: abnf-parser/scanner.l,v 1.13 2004/10/11 17:14:11 fenner Exp $";
 
 int yylineno = 1;
 int yycolumn = 0;
@@ -65,7 +65,7 @@ proseval	[ -=?-~]*
 
 mycrlf	(\n\r|\r\n|\r|\n)
 
-%s SKIP
+%x SKIP
 
 /* line number isn't quite being updated properly.
    suspect unterminated charval and prosevals. */
