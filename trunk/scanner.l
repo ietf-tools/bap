@@ -9,7 +9,7 @@
 #include "y.tab.h"
 
 static const char rcsid[] =
- "$Fenner: abnf-parser/scanner.l,v 1.8 2002/07/30 17:05:01 fenner Exp $";
+ "$Fenner: abnf-parser/scanner.l,v 1.9 2004/06/25 20:22:55 fenner Exp $";
 
 int yylineno = 1;
 int yycolumn = 0;
@@ -79,7 +79,7 @@ mycrlf	(\n\r|\r\n|\r|\n)
 			yylval.string = strdup(yytext);
 			return RULENAME;
 			}
-%b{bit}+-{bit}+		{
+%b{bit}+(-|\.\.){bit}+		{
 			yycolumn += strlen(yytext);
 			scanrange(yytext + 2, 2, &yylval.range);
 			return BINVALRANGE;
@@ -91,7 +91,7 @@ mycrlf	(\n\r|\r\n|\r|\n)
 			}
 %b.			{ mywarn("bad bit value");
 			  badchar = yytext[2]; BEGIN(SKIP); }
-%d{digit}+-{digit}+	{
+%d{digit}+(-|\.\.){digit}+	{
 			yycolumn += strlen(yytext);
 			scanrange(yytext + 2, 10, &yylval.range);
 			return DECVALRANGE;
@@ -103,7 +103,7 @@ mycrlf	(\n\r|\r\n|\r|\n)
 			}
 %d.			{ mywarn("bad decimal value");
 			  badchar = yytext[2]; BEGIN(SKIP); }
-%x{hexdig}+-{hexdig}+	{
+%x{hexdig}+(-|\.\.){hexdig}+	{
 			yycolumn += strlen(yytext);
 			scanrange(yytext + 2, 16, &yylval.range);
 			return HEXVALRANGE;
@@ -186,10 +186,18 @@ scanrange(char *p, int base, struct range *r)
 		r->hi = 255;
 		return;
 	}
-	if (*ep != '-') {
+	if (*ep != '-' && *ep != '.') {
 		mywarn("internal scanner error 4");
 		r->hi = r->lo;
 		return;
+	}
+	if (*ep == '.') {
+		if (!permissive) {
+			badchar = '.';
+			BEGIN(SKIP);
+		}
+		mywarn("Ranges use \"-\", not \"..\".");
+		ep++;
 	}
 	r->hi = strtoul(ep + 1, &ep, base);
 	if (*ep) {
