@@ -4,7 +4,7 @@
 # Sooooo many things to want to fix up.
 # Bill Fenner <fenner@fenron.com> 23 June 2004
 #
-# $Fenner: abnf-parser/abnf.cgi,v 1.4 2004/09/17 03:48:12 fenner Exp $
+# $Fenner: abnf-parser/abnf.cgi,v 1.5 2005/02/03 05:38:46 fenner Exp $
 #
 use CGI qw/:standard/;
 
@@ -80,7 +80,6 @@ if (param("abnf")) {
 	close(DIFF);
 }
 print hr, start_form, p("Enter ABNF Here:");
-print p("NOTE: rules must start at column zero.  Remove leading whitespace from non-continuation lines before entering.");
 print textarea('abnf', '', 20, 80);
 print br, submit, end_form, hr;
 
