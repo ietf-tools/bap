@@ -5,7 +5,7 @@
 #include "common.h"
 
 static const char rcsid[] =
- "$Fenner: abnf-parser/main.c,v 1.12 2002/07/30 17:05:00 fenner Exp $";
+ "$Fenner: abnf-parser/main.c,v 1.13 2002/08/08 05:24:45 fenner Exp $";
 
 static void printobj_r(object *, int, int);
 
@@ -132,6 +132,13 @@ printobj(object *o, int tflag)
  */
 #define	NOPAREN(o)	((o->next == NULL) && (o->type != T_ALTERNATION) && (o->u.e.repetition.lo == 1 && o->u.e.repetition.hi == 1))
 
+/*
+ * No brackets needed around a group that
+ * contains a single element that has a
+ * possible repetition of 0.
+ */
+#define NOBRACKET(o)	((o->next == NULL) && (o->u.e.repetition.lo == 0))
+
 static void
 printobj_r(object *o, int parenttype, int tflag)
 {
@@ -168,7 +175,8 @@ printobj_r(object *o, int parenttype, int tflag)
 				printf("{GROUP}");
 			if (o->u.e.repetition.lo == 0 &&
 			    o->u.e.repetition.hi == 1) {
-				printf("[ ");
+				if (!NOBRACKET(o->u.e.e.group))
+					printf("[ ");
 			} else {
 				printrep(&o->u.e.repetition);
 				if (!NOPAREN(o->u.e.e.group))
@@ -177,7 +185,8 @@ printobj_r(object *o, int parenttype, int tflag)
 			printobj_r(o->u.e.e.group, o->type, tflag);
 			if (o->u.e.repetition.lo == 0 &&
 			    o->u.e.repetition.hi == 1) {
-				printf(" ]");
+				if (!NOBRACKET(o->u.e.e.group))
+					printf(" ]");
 			} else {
 				if (!NOPAREN(o->u.e.e.group))
 					printf(" )");
