@@ -17,7 +17,10 @@ $inabnf = 0;
 $blanklines = $top = 0;
 while (<>) {
 	chomp;
-	if ($inabnf == 0 && m,^(\s*)\S+\s*=/?,) {
+	# bewlow regex for rule name permits underscores;
+	# rfc2234 doesn't but some grammars use it anyway
+	($spaces, $newrule) = m,^(\s*)([A-Za-z][-0-9A-Za-z_]+\s*=/?)?,;
+	if ($inabnf == 0 && $newrule) {
 		$inabnf = 1;
 	}
 	next unless $inabnf;
@@ -34,13 +37,10 @@ while (<>) {
 		print "\n" x $blanklines;
 	}
 	$blanklines = $top = 0;
-	# bewlow regex for rule name permits underscores;
-	# rfc2234 doesn't but some grammars try
-	($spaces, $newrule) = m,^(\s*)([A-Za-z][-0-9A-Za-z_]+\s*=/?)?,;
 	$curindent = length($spaces);
 	if ($newrule) {
 		# new rule - indentation can change
-		if ($indent != 0 && $curindent != $indent) {
+		if ($strip == 0 && $indent != 0 && $curindent != $indent) {
 			print " " x $indent, "; XXX recommend keeping indentation consistent\n";
 		}
 		$indent = $curindent;
