@@ -1,0 +1,45 @@
+detect recursive rules
+
+optimize 0*1x to [x].  already do this for 0*1(x).
+
+word-wrap output.
+
+intelligently word-wrap output. (is there such a thing?)
+
+fix output for
+hello = goodbye ( foo
+goodbye = blah
+
+handle syntax error of missing rule, just leading "="
+ (initial attempts caused shift/reduce or reduce/reduce conflicts!)
+
+canonify "a" / "A" (really "a"/foo/bar/baz/zip/dop/"A")
+
+canonify "foo / foo"
+
+fix output for
+prose = <this is unterminated
+	but it continues [5] here>
+        ; wtf is up with this confusing stuff
+1:30: unterminated prose-val
+                             ^
+2:29: syntax error
+                            ^
+3:46: Illegal character '>' - skipping to end of line
+                                             ^
+-- why do we get the illegal character there?  The syntax error
+   seems to confuse the SKIP stuff, which may have tokenized the
+   "here>" and set skip but then the grammar syntax error confused
+   things?
+
+
+Read in dependencies (including a built-in core.abnf?), don't check
+their syntax and don't output them, just read in the rule names.
+
+
+
+Parse inputs based on the grammar, say report whether or not they
+match.
+
+
+Play madlibs with the grammar, to see what else it might accept
