@@ -4,7 +4,7 @@
 # Sooooo many things to want to fix up.
 # Bill Fenner <fenner@fenron.com> 23 June 2004
 #
-# $Fenner: abnf-parser/abnf.cgi,v 1.3 2004/09/16 18:34:15 fenner Exp $
+# $Fenner: abnf-parser/abnf.cgi,v 1.4 2004/09/17 03:48:12 fenner Exp $
 #
 use CGI qw/:standard/;
 
@@ -42,7 +42,7 @@ if (param("abnf")) {
 					if ($col == 0) {
 						$line--;
 					}
-					while ($line > 0 && $lines[$line - 1] =~ /^(\s|$)/) {
+					while ($line > 1 && $lines[$line - 1] =~ /^(\s|$)/) {
 						$line--;
 					}
 					while ($line <= $lastline) {
