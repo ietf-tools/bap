@@ -10,9 +10,6 @@ fix output for
 hello = goodbye ( foo
 goodbye = blah
 
-add comments to plaintext strings or ranges
-e.g., %x30-39 ; "0" - "9"
-
 handle syntax error of missing rule, just leading "="
  (initial attempts caused shift/reduce or reduce/reduce conflicts!)
 
@@ -36,3 +33,13 @@ prose = <this is unterminated
    things?
 
 
+Read in dependencies (including a built-in core.abnf?), don't check
+their syntax and don't output them, just read in the rule names.
+
+
+
+Parse inputs based on the grammar, say report whether or not they
+match.
+
+
+Play madlibs with the grammar, to see what else it might accept
