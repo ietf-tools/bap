@@ -9,6 +9,9 @@ use strict;
 my($inabnf, $indent, $curindent, $spaces, $newrule);
 my($blanklines, $top);
 
+# Strip spaces so that Bill's parser can handle the output
+my($strip) = 1;
+
 $indent = 0;
 $inabnf = 0;
 $blanklines = $top = 0;
@@ -41,6 +44,7 @@ while (<>) {
 			print " " x $indent, "; XXX recommend keeping indentation consistent\n";
 		}
 		$indent = $curindent;
+		s/^\s+// if ($strip);
 	} elsif (/\S/ && $curindent <= $indent) {
 		# all-whitespace lines stay
 		#print "; terminating ABNF with $curindent $_\n";
