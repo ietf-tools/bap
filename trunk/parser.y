@@ -66,7 +66,6 @@ rule:	recover RULENAME { defline = yylineno } definedas rulerest {
 		else
 			lastrule->next = r;
 		lastrule = r;
-		printf("Rule %s defined on line %d\n", $2, defline);
 		}
 	;
 
@@ -157,7 +156,6 @@ element:
 				$$ = newobj(T_RULE);
 				$$->u.e.e.rule.name = $1;
 				$$->u.e.e.rule.rule = NULL;	/* lookup */
-				printf("element rule %s\n", $1);
 				}
 	| group	
 	| option
