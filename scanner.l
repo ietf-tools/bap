@@ -37,16 +37,18 @@
 #include "y.tab.h"
 
 static const char rcsid[] =
- "$Fenner: abnf-parser/scanner.l,v 1.13 2004/10/11 17:14:11 fenner Exp $";
+ "$Fenner: abnf-parser/scanner.l,v 1.14 2004/10/11 17:35:35 fenner Exp $";
 
 int yylineno = 1;
 int yycolumn = 0;
 extern int permissive;
+int indent = -1;
 
 char badchar;
 
 static void scanrange(char *, int, struct range *);
 static char *scanstr(char *, int);
+static void gotcr(void);
 
 %}
 
@@ -65,6 +67,8 @@ proseval	[ -=?-~]*
 
 mycrlf	(\n\r|\r\n|\r|\n)
 
+/* %x may be a flex feature; %s works but sometimes results in
+ * confusing error messages */
 %x SKIP
 
 /* line number isn't quite being updated properly.
@@ -72,8 +76,7 @@ mycrlf	(\n\r|\r\n|\r|\n)
 %%
 <SKIP>.*{mycrlf}	{ 	char q = (badchar == '\'') ? '"' : '\'';
 				mywarn(MYERROR, "Illegal character %c%c%c - skipping to end of line", q, badchar, q);
-				yylineno++;
-				yycolumn = 0;
+				gotcr();
 				BEGIN(INITIAL);
 				return CRLF; }
 \"{charval}["\r\n]	{
@@ -103,6 +106,9 @@ mycrlf	(\n\r|\r\n|\r|\n)
 			return PROSEVAL;
 			}
 {rulename}		{
+			/* record the indentation of the first rule name. */
+			if (indent == -1)
+				indent = yycolumn;
 			yycolumn += strlen(yytext);
 			yylval.string = strdup(yytext);
 			return RULENAME;
@@ -176,22 +182,38 @@ mycrlf	(\n\r|\r\n|\r|\n)
 ({wsp}+|(;[^\r\n]*)|{mycrlf}{wsp}+)+	{ char *p = yytext;
 				while (*p) {
 					if (*p == '\r') {
-						yylineno++;
-						yycolumn = 0;
-						if (*(p+1) == '\n')
+						gotcr();
+						if (*(++p) == '\n')
 							p++;
+						continue;
 					}
 					if (*p == '\n') {
-						yylineno++;
-						yycolumn = 0;
-						if (*(p+1) == '\r')
+						gotcr();
+						if (*(++p) == '\r')
 							p++;
+						continue;
 					}
 					p++;
 					yycolumn++;
 				}
-				return CWSP; }
-{mycrlf}		{ yylineno++; yycolumn = 0; return CRLF; }
+				/* If we don't know the indent yet, then just
+				   ignore leading whitespace. */
+				if (indent == -1)
+					continue;
+				/* If there is more whitespace than
+				   the initial indent, then tell the parser
+				   about the leading whitespace. */
+				if (yycolumn > indent)
+					return CWSP;
+				if (yycolumn < indent) {
+					indent = yycolumn;
+					mywarn(MYERROR, "adjusting indentation");
+				}
+				/* Since we didn't have more whitespace than
+				   indent, tell the parser it was just
+				   a CR. */
+				return CRLF; }
+{mycrlf}		{ gotcr(); return CRLF; }
 [][()=/]		{ yycolumn++; return yytext[0]; }
 \|			{ yycolumn++;
 			  if (!permissive) {
@@ -246,7 +268,7 @@ scanstr(char *p, int base)
 			i = 255;
 		}
 		if (i == 0) {
-			mywarn(MYERROR, "This parser will truncate strings at %x00");
+			mywarn(MYERROR, "This parser will truncate strings at %%x00");
 		}
 		*b++ = i;
 		p = ep + 1;
@@ -255,4 +277,11 @@ scanstr(char *p, int base)
 		mywarn(MYERROR, "internal scanner error 6");
 	*b++ = '\0';
 	return strdup(buf);
+}
+
+static void
+gotcr(void)
+{
+	yylineno++;
+	yycolumn = 0;
 }
