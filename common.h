@@ -1,3 +1,7 @@
+/*
+ * Bill's ABNF Parser
+ * $Fenner$
+ */
 
 struct range {
 	int lo;

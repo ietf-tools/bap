@@ -9,7 +9,7 @@
 #include "y.tab.h"
 
 static const char rcsid[] =
- "$Id$";
+ "$Fenner$";
 
 int yylineno = 1;
 int yycolumn = 0;

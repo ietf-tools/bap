@@ -10,7 +10,7 @@
 #include "common.h"
 
 static const char rcsid[] =
- "$Id$";
+ "$Fenner$";
 
 extern int yylineno, yycolumn;
 
