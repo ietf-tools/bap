@@ -5,7 +5,7 @@
 #include "common.h"
 
 static const char rcsid[] =
- "$Id$";
+ "$Fenner$";
 
 static void printobj_r(object *, int, int);
 
