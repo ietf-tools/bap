@@ -5,8 +5,12 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <stdarg.h>
 
 #include "common.h"
+
+static const char rcsid[] =
+ "$Id$";
 
 extern int yylineno, yycolumn;
 
@@ -26,6 +30,7 @@ object *newobj(int);
 	char *string;
 	struct range range;
 	object *object;
+	int retval;
 }
 
 %token <string> CHARVAL PROSEVAL BINVAL DECVAL HEXVAL RULENAME
@@ -36,6 +41,7 @@ object *newobj(int);
 %type <range> numvalrange
 %type <object> element group option repetition elements
 %type <object> rulerest
+%type <retval> definedas
 
 %%
 
@@ -48,7 +54,7 @@ rulelist: rules
 
 rules:	  rule
 	| starcwsp CRLF
-	| cwsp RULENAME	{ yyerror("Indented rules are Right Out."); YYERROR; }
+	| cwsp RULENAME	{ mywarn("Indented rules are Right Out."); YYERROR; }
 	;
 
 recover:
@@ -57,37 +63,52 @@ recover:
 
 rule:	recover RULENAME { defline = yylineno; } definedas rulerest {
 		struct rule *r;
+
 		r = findrule($2);
-		if (r->name && strcmp(r->name, $2))
-			yyerror("Rule %s previously %s as %s", $2,
-				r->rule ? "defined" : "referred to", r->name);
-		if (r->rule)
-			yyerror("Rule %s was already defined on line %d",
-				r->line);
-		else {
-			r->name = $2;
-			r->line = defline;
-			r->rule = $5;
-			if (r->next != rules) {
-				/* unlink r from where it is and move to the end */
-				r->prev->next = r->next;
-				r->next->prev = r->prev;
-				if (rules == r)
-					rules = r->next;
-				r->prev = rules->prev;
-				rules->prev = r;
-				r->prev->next = r;
-				r->next = rules;
+
+		if ($4 == 0) {	/* = */
+			if (r->name && strcmp(r->name, $2))
+				mywarn("Rule %s previously %s as %s", $2,
+					r->rule ? "defined" : "referred to", r->name);
+			if (r->rule)
+				mywarn("Rule %s was already defined on line %d", $2,
+					r->line);
+			else {
+				r->name = $2;
+				r->line = defline;
+				r->rule = $5;
+				if (r->next != rules) {
+					/* unlink r from where it is and move to the end */
+					r->prev->next = r->next;
+					r->next->prev = r->prev;
+					if (rules == r)
+						rules = r->next;
+					r->prev = rules->prev;
+					rules->prev = r;
+					r->prev->next = r;
+					r->next = rules;
+				}
 			}
+		} else {	/* =/ */
+			object *tmp;
+
+			if (r->name == NULL || r->rule == NULL) {
+				mywarn("Rule %s does not yet exist so cannot be incrementally added to", $2);
+				YYERROR;
+			}
+			tmp = newobj(T_ALTERNATION);
+			tmp->u.alternation.left = r->rule;
+			tmp->u.alternation.right = $5;
+			r->rule = tmp;
 		}
 		}
 	;
 
-definedas: starcwsp EQSLASH starcwsp
-	| starcwsp '=' starcwsp
-	| starcwsp '=' starcwsp CRLF { yyerror("Empty rule"); YYERROR; }
-	| starcwsp repetition { yyerror("Got definitions, expecting '=' or '=/'"); YYERROR; }
-	| starcwsp CRLF { yyerror("Got EOL, expecting '=' or '=/'"); YYERROR; }
+definedas: starcwsp EQSLASH starcwsp	{ $$ = 1; }
+	| starcwsp '=' starcwsp		{ $$ = 0; }
+	| starcwsp '=' starcwsp CRLF { mywarn("Empty rule"); YYERROR; /* XXX this CRLF may be the one required to recover from the error, but we've already used it... */}
+	| starcwsp repetition { mywarn("Got definitions, expecting '=' or '=/'"); YYERROR; }
+	| starcwsp CRLF { mywarn("Got EOL, expecting '=' or '=/'"); YYERROR; /* XXX this CRLF may be the one required to recover from the error, but we've already used it... */}
 	;
 
 cwsp:	  CWSP
@@ -98,8 +119,8 @@ starcwsp:
 	;
 
 rulerest: elements starcwsp CRLF	{ $$ = $1; }
-	| elements ')'	{ yyerror("Extra ')'?  Missing '('?"); YYERROR; }
-	| elements ']'	{ yyerror("Extra ']'?  Missing '['?"); YYERROR; }
+	| elements ')'	{ mywarn("Extra ')'?  Missing '('?"); YYERROR; }
+	| elements ']'	{ mywarn("Extra ']'?  Missing '['?"); YYERROR; }
 	;
 
 elements:
@@ -122,7 +143,7 @@ elements:
 		}
 	| elements starcwsp '|' starcwsp repetition	{
 		if (!pipewarn) {
-			yyerror("'/' is the alternation character in ABNF");
+			mywarn("'/' is the alternation character in ABNF");
 			pipewarn = 1;
 		}
 		$$ = newobj(T_ALTERNATION);
@@ -131,7 +152,7 @@ elements:
 		}
 	| elements repetition {
 		object *o = $1;
-		yyerror("Concatenation of adjacent elements (missing whitespace?)");
+		mywarn("Concatenation of adjacent elements (missing whitespace?)");
 		printf("; line %d ... trying to concatenate ", yylineno);
 		if (o->type == T_ALTERNATION)
 			o = o->u.alternation.right;
@@ -144,11 +165,11 @@ elements:
 		YYERROR;
 		}
 	| elements starcwsp '=' {
-		yyerror("Encountered definition while parsing rule (Indented rule?)");
+		mywarn("Encountered definition while parsing rule (Indented rule?)");
 		YYERROR;
 		}
 	| elements starcwsp EQSLASH {
-		yyerror("Encountered definition while parsing rule (Indented rule?)");
+		mywarn("Encountered definition while parsing rule (Indented rule?)");
 		YYERROR;
 		}
 	;
@@ -163,12 +184,12 @@ repetition:
 					$$->u.e.repetition.lo = $1.lo;
 				$$->u.e.repetition.hi = $1.hi;
 				if ($1.hi < $1.lo && $1.hi != -1)
-					yyerror("Repeat range swapped, should be min*max");
+					mywarn("Repeat range swapped, should be min*max");
 				if ($1.hi == 0)
-					yyerror("Absolute repeat count of zero means this element may not occur at all");
+					mywarn("Absolute repeat count of zero means this element may not occur at all");
 				}
 	| REPEAT cwsp		{
-				yyerror("No whitespace allowed between repeat and element.");
+				mywarn("No whitespace allowed between repeat and element.");
 				YYERROR;
 				}
 	;
@@ -190,7 +211,7 @@ element:
 				$$->u.e.e.rule.name = $1;
 				$$->u.e.e.rule.rule = findrule($1);
 				if (strcmp($1, $$->u.e.e.rule.rule->name))
-					yyerror("Rule %s referred to as %s", $$->u.e.e.rule.rule->name, $1);
+					mywarn("Rule %s referred to as %s", $$->u.e.e.rule.rule->name, $1);
 				}
 	| group	
 	| option
@@ -199,7 +220,7 @@ element:
 				if (*$1)
 					p += strlen($1) - 1;
 				if (*p == '\n' || *p == '\r') {
-					yyerror("unterminated quoted-string");
+					mywarn("unterminated quoted-string");
 					YYERROR;
 				}
 				$$ = newobj(T_TERMSTR);
@@ -227,7 +248,7 @@ group:	  '(' starcwsp elements starcwsp ')'	{
 						$$->u.e.e.group = $3;
 						}
 	| '(' starcwsp elements starcwsp CRLF {
-		yyerror("Missing ')'?  Extra '('?");
+		mywarn("Missing ')'?  Extra '('?");
 		YYERROR;
 		}
 	;
@@ -238,23 +259,35 @@ option:	  '[' starcwsp elements starcwsp ']'	{
 						$$->u.e.repetition.lo = 0;
 						}
 	| '[' starcwsp elements starcwsp CRLF {
-		yyerror("Missing ']'?  Extra '['?");
+		mywarn("Missing ']'?  Extra '['?");
 		YYERROR;
 		}
 	;
 
 %%
 
+void
+mywarn(char *fmt, ...)
+{
+	va_list ap;
+
+	/* file name */
+	fprintf(stderr, "%d:%d: ", yylineno, yycolumn);
+	va_start(ap, fmt);
+	vfprintf(stderr, fmt, ap);
+	fprintf(stderr, "\n");
+}
+
 int
 yyerror(char *s)
 {
 #ifdef YYERROR_VERBOSE
-	fprintf(stderr, "yyerror: line %d:%d: state %d, token %s: %s\n", yylineno, yycolumn,
-		yystatep ? *yystatep : -2468,
+	mywarn("state %d, token %s: %s", 
+		*yystatep,
 		(yychar1p && (*yychar1p >= 0 && *yychar1p <= (sizeof(yytname)/sizeof(yytname[0])))) ? yytname[*yychar1p] : "?",
 		s);
 #else
-	fprintf(stderr, "yyerror: line %d:%d: %s\n", yylineno, yycolumn, s);
+	mywarn("%s\n", s);
 #endif
 }
 
@@ -265,7 +298,7 @@ newobj(int type)
 
 	o = calloc(sizeof(object), 1);
 	if (o == NULL) {
-		yyerror("out of memory");
+		mywarn("out of memory");
 		exit(1);
 	}
 	o->type = type;
