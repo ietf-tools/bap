@@ -9,7 +9,7 @@
 #include "y.tab.h"
 
 static const char rcsid[] =
- "$Fenner$";
+ "$Fenner: abnf-parser/scanner.l,v 1.8 2002/07/30 17:05:01 fenner Exp $";
 
 int yylineno = 1;
 int yycolumn = 0;
@@ -53,8 +53,10 @@ mycrlf	(\n\r|\r\n|\r|\n)
 			yycolumn += strlen(yytext);
 			yylval.string = strdup(yytext + 1);
 			p = &yylval.string[strlen(yylval.string) - 1];
-			if (*p != '"')
+			if (*p != '"') {
 				mywarn("unterminated char-val");
+				unput(*p);	/* put the cr or lf back */
+			}
 			*p = '\0';
 			if (*yylval.string == '\0')
 /* warning only */		mywarn("zero-length char-val");
@@ -65,8 +67,10 @@ mycrlf	(\n\r|\r\n|\r|\n)
 			yycolumn += strlen(yytext);
 			yylval.string = strdup(yytext + 1);
 			p = &yylval.string[strlen(yylval.string) - 1];
-			if (*p != '>')
+			if (*p != '>') {
 				mywarn("unterminated prose-val");
+				unput(*p);	/* put the cr or lf back */
+			}
 			*p = '\0';
 			return PROSEVAL;
 			}
