@@ -1,13 +1,29 @@
 #include <stdio.h>
+#include <stdlib.h>
 #include <search.h>
+#include <unistd.h>
 #include "common.h"
+
+void printobj(object *);
+static void printobj_r(object *, int);
 
 #define	MAXRULE		1000	/* XXX */
 
 struct rule *rules = NULL;
 
-main()
+int cflag = 0;		/* suppress line number comments */
+
+void
+usage(void)
 {
+	fprintf(stderr, "usage: p [-d]\n");
+	exit(1);
+}
+
+int
+main(int argc, char **argv)
+{
+	int ch;
 	struct rule *r;
 #ifdef YYDEBUG
 	extern int yydebug;
@@ -16,12 +32,35 @@ main()
 #endif
 	hcreate(MAXRULE);
 
+	while ((ch = getopt(argc, argv, "cd")) != -1) {
+		switch (ch) {
+		case 'c':
+			cflag++;
+			break;
+
+		case 'd':
+#ifdef YYDEBUG
+			yydebug = 1;
+#else
+			fprintf(stderr, "Rebuild with -DYYDEBUG to use -d.\n");
+#endif
+			break;
+
+		default:
+			usage();
+		}
+	}
+	argc -= optind;
+	argv += optind;
+
 	yyparse();
 	for (r = rules; r; r = r->next) {
 		if (r->rule) {
 			printf("%s = ", r->name);
 			printobj(r->rule);
-			printf(" ; line %d\n", r->line);
+			if (!cflag)
+				printf(" ; line %d", r->line);
+			printf("\n");
 		} else {
 			printf("; %s = <UNDEFINED>\n", r->name);
 		}
@@ -29,6 +68,7 @@ main()
 			break;
 	}
 	hdestroy();
+	exit(0);
 }
 
 void
@@ -60,6 +100,7 @@ printobj_r(object *o, int parenttype)
 {
 	int iterating = 0;
 
+	/* Put parenthesis around concatenations */
 	if (parenttype != T_GROUP && o->next) {
 		iterating = 1;
 		printf("( ");
@@ -86,14 +127,17 @@ printobj_r(object *o, int parenttype)
 				printf("[ ");
 			} else {
 				printrep(&o->u.e.repetition);
-				printf("( ");
+				/* don't print parens if a group of 1 */
+				if (o->u.e.e.group->next)
+					printf("( ");
 			}
 			printobj_r(o->u.e.e.group, o->type);
 			if (o->u.e.repetition.lo == 0 &&
 			    o->u.e.repetition.hi == 1) {
 				printf(" ]");
 			} else {
-				printf(" )");
+				if (o->u.e.e.group->next)
+					printf(" )");
 			}
 			break;
 		case T_TERMSTR:
