@@ -5,7 +5,7 @@
 #include "common.h"
 
 static const char rcsid[] =
- "$Fenner: abnf-parser/main.c,v 1.17 2004/06/28 22:58:23 fenner Exp $";
+ "$Fenner: abnf-parser/main.c,v 1.18 2004/06/28 23:01:06 fenner Exp $";
 
 static void printobj_r(object *, int, int);
 static void canonify(struct rule *);
@@ -15,15 +15,22 @@ static void canonify_r(struct object **);
 
 struct rule *rules = NULL;
 
-int cflag = 0;		/* suppress line number comments */
+int cflag = 0;		/* include line number comments */
+int c2flag = 0;		/* include comments for printable constants */
 int tflag = 0;		/* print type info */
 int permissive = 1;	/* Be permissive (e.g. accept '|') */
 int qflag = 0;		/* quiet */
+int canon = 1;		/* canonify */
 
 void
 usage(void)
 {
-	fprintf(stderr, "usage: p [-cdt]\n");
+	fprintf(stderr, "usage: p [-ckntq]\n");
+	fprintf(stderr, " -c : include rule definition line # in comment\n");
+	fprintf(stderr, " -k : add comments for printable characters specified as %%x\n");
+	fprintf(stderr, " -n : don't \"canonify\" result\n");
+	fprintf(stderr, " -t : include type info in result\n");
+	fprintf(stderr, " -q : don't print parsed grammar\n");
 	exit(1);
 }
 
@@ -39,7 +46,7 @@ main(int argc, char **argv)
 #endif
 	hcreate(MAXRULE);
 
-	while ((ch = getopt(argc, argv, "cdtq")) != -1) {
+	while ((ch = getopt(argc, argv, "cdkntq")) != -1) {
 		switch (ch) {
 		case 'c':
 			cflag++;
@@ -51,6 +58,14 @@ main(int argc, char **argv)
 #else
 			fprintf(stderr, "Rebuild with -DYYDEBUG to use -d.\n");
 #endif
+			break;
+
+		case 'k':
+			c2flag++;
+			break;
+
+		case 'n':
+			canonify = 0;
 			break;
 
 		case 't':
@@ -75,14 +90,17 @@ main(int argc, char **argv)
 	if (argc > 0)
 		usage();
 
+	/* Parse the grammar, perhaps spouting errors. */
 	yyparse();
+	/* If we're not quiet, then output the grammar again. */
 	if (!qflag) {
-		canonify(rules);
+		if (canon)
+			canonify(rules);
 		for (r = rules; r; r = r->next) {
 			if (r->rule) {
 				printf("%s = ", r->name);
 				printobj(r->rule, tflag);
-				if (!cflag)
+				if (cflag)
 					printf(" ; line %d", r->line);
 				printf("\n");
 			} else {
@@ -108,9 +126,8 @@ canonify(struct rule *rules)
 	struct rule *r;
 
 	for (r = rules; r; r = r->next) {
-		if (!r->rule)
-			continue;
-		canonify_r(&r->rule);
+		if (r->rule)
+			canonify_r(&r->rule);
 		if (r->next == rules)
 			break;
 	}
@@ -278,7 +295,7 @@ printobj_r(object *o, int parenttype, int tflag)
 					printf("%c%02X", sep, *p++);
 					sep = '.';
 				}
-				if (allprintable)
+				if (c2flag && allprintable)
 					printf(" ; %s\n", o->u.e.e.termstr.str);
 			} else {
 				printf("%c%s%c", '"', o->u.e.e.termstr.str, '"');
@@ -291,7 +308,8 @@ printobj_r(object *o, int parenttype, int tflag)
 			printf("%%x%02X-%02X",
 				(unsigned char)o->u.e.e.termrange.lo,
 				(unsigned char)o->u.e.e.termrange.hi);
-			if (isprint((unsigned char)o->u.e.e.termrange.lo) &&
+			if (c2flag &&
+			    isprint((unsigned char)o->u.e.e.termrange.lo) &&
 			    isprint((unsigned char)o->u.e.e.termrange.hi)) {
 				printf(" ; '%c'-'%c'\n",
 					(unsigned char)o->u.e.e.termrange.lo,
