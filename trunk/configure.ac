@@ -1,9 +1,9 @@
-dnl $Fenner: abnf-parser/configure.ac,v 1.6 2004/09/17 03:17:13 fenner Exp $
+dnl $Fenner: abnf-parser/configure.ac,v 1.7 2005/02/03 05:38:02 fenner Exp $
 dnl
 dnl Boy does modern autoconf make it hard to have a small ./configure.
 dnl Sorry that it's so huge for almost no configuration.
 
-AC_INIT(bap, 1.0)
+AC_INIT(bap, 1.1)
 
 AC_PROG_CC
 AC_PROG_YACC
