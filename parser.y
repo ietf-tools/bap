@@ -17,9 +17,11 @@ extern int yylineno, yycolumn;
 int defline;
 extern struct rule *rules;
 
+#ifdef YYERROR_VERBOSE
 /* HACK-O-ROONIE for yyerror verbosity */
 int *yystatep = NULL;
 int *yychar1p = NULL;
+#endif
 
 int pipewarn = 0;
 
@@ -45,7 +47,11 @@ object *newobj(int);
 
 %%
 
-begin:	{ /* HACK-O-RAMA */ yystatep = &yystate; yychar1p = &yychar1; } rulelist
+begin:	{
+#ifdef YYERROR_VERBOSE
+	/* HACK-O-RAMA */ yystatep = &yystate; yychar1p = &yychar1;
+#endif
+		} rulelist
 	;
 
 rulelist: rules
@@ -267,7 +273,7 @@ option:	  '[' starcwsp elements starcwsp ']'	{
 %%
 
 void
-mywarn(char *fmt, ...)
+mywarn(const char *fmt, ...)
 {
 	va_list ap;
 
