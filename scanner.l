@@ -9,6 +9,7 @@
 #include "y.tab.h"
 
 int yylineno = 1;
+int yycolumn = 0;
 
 char badchar;
 
@@ -29,50 +30,68 @@ mycrlf	(\n\r|\r\n|\r|\n)
 %s SKIP
 
 %%
+<SKIP>.*{mycrlf}	{ 	char buf[80];
+				sprintf(buf, "Illegal character `%c' - skipping to end of line", badchar);
+				yyerror(buf);
+				yylineno++;
+				yycolumn = 0;
+				BEGIN(INITIAL);
+				return CRLF; }
 \"[ !#-\177]*["\r\n]	{
 			char *p;
+			yycolumn += strlen(yytext);
 			yylval.string = strdup(yytext + 1);
 			p = &yylval.string[strlen(yylval.string) - 1];
 			if (*p == '"')
 				*p = '\0';
+			/* else warn about unterminated string */
 			return CHARVAL;
 			}
 \<[ -=?-\177]*>		{
+			yycolumn += strlen(yytext);
 			yylval.string = strdup(yytext + 1);
 			yylval.string[strlen(yylval.string) - 1] = '\0';
 			return PROSEVAL;
 			}
 {rulename}		{
+			yycolumn += strlen(yytext);
 			yylval.string = strdup(yytext);
 			return RULENAME;
 			}
 %b{bit}+-{bit}+		{
+			yycolumn += strlen(yytext);
 			scanrange(yytext + 2, 2, &yylval.range);
 			return BINVALRANGE;
 			}
 %b{bit}+(\.{bit}+)*	{
+			yycolumn += strlen(yytext);
 			yylval.string = scanstr(yytext + 2, 2);
 			return BINVAL;
 			}
 %d{digit}+-{digit}+	{
+			yycolumn += strlen(yytext);
 			scanrange(yytext + 2, 10, &yylval.range);
 			return DECVALRANGE;
 			}
 %d{digit}+(\.{digit}+)*	{
+			yycolumn += strlen(yytext);
 			yylval.string = scanstr(yytext + 2, 10);
 			return DECVAL;
 			}
 %x{hexdig}+-{hexdig}+	{
+			yycolumn += strlen(yytext);
 			scanrange(yytext + 2, 16, &yylval.range);
 			return HEXVALRANGE;
 			}
 %x{hexdig}+(\.{hexdig}+)*	{
+			yycolumn += strlen(yytext);
 			yylval.string = scanstr(yytext + 2, 16);
 			return HEXVAL;
 			}
 {digit}*\*{digit}*	{
 			char *ep;
 
+			yycolumn += strlen(yytext);
 			yylval.range.lo = strtoul(yytext, &ep, 10);
 			if (*ep != '*') {
 			    yyerror("internal scanner error 1");
@@ -90,6 +109,7 @@ mycrlf	(\n\r|\r\n|\r|\n)
 {digit}+		{
 			char *ep;
 
+			yycolumn += strlen(yytext);
 			yylval.range.hi = yylval.range.lo = strtoul(yytext, &ep, 10);
 			if (*ep) {
 			    yyerror("internal scanner error 3");
@@ -97,32 +117,29 @@ mycrlf	(\n\r|\r\n|\r|\n)
 			}
 			return REPEAT;
 			}
-=\/			{ return EQSLASH; }
+=\/			{ yycolumn += 2; return EQSLASH; }
 ({wsp}+|(;[^\r\n]*)|{mycrlf}{wsp}+)+	{ char *p = yytext;
 				while (*p) {
 					if (*p == '\r') {
 						yylineno++;
+						yycolumn = 0;
 						if (*(p+1) == '\n')
 							p++;
 					}
 					if (*p == '\n') {
 						yylineno++;
+						yycolumn = 0;
 						if (*(p+1) == '\r')
 							p++;
 					}
 					p++;
+					yycolumn++;
 				}
 				return CWSP; }
-{mycrlf}		{ yylineno++; return CRLF; }
-[][()=/]		{ return yytext[0]; }
-\|			{ /* if (!permissive) BEGIN(SKIP); */ return yytext[0]; }
-.			{ badchar = yytext[0]; BEGIN(SKIP); }
-<SKIP>.*{mycrlf}	{ 	char buf[80];
-				sprintf(buf, "Illegal character `%c' - skipping to end of line", badchar);
-				yyerror(buf);
-				yylineno++;
-				BEGIN(INITIAL);
-				return CRLF; }
+{mycrlf}		{ yylineno++; yycolumn = 0; return CRLF; }
+[][()=/]		{ yycolumn++; return yytext[0]; }
+\|			{ yycolumn++; /* if (!permissive) BEGIN(SKIP); */ return yytext[0]; }
+.			{ yycolumn++; badchar = yytext[0]; BEGIN(SKIP); }
 %%
 
 static void

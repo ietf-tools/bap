@@ -8,7 +8,7 @@
 
 #include "common.h"
 
-extern int yylineno;
+extern int yylineno, yycolumn;
 
 int defline;
 extern struct rule *rules;
@@ -243,12 +243,12 @@ int
 yyerror(char *s)
 {
 #ifdef YYERROR_VERBOSE
-	fprintf(stderr, "yyerror: line %d: state %d, token %s: %s\n", yylineno,
+	fprintf(stderr, "yyerror: line %d:%d: state %d, token %s: %s\n", yylineno, yycolumn,
 		yystatep ? *yystatep : -2468,
 		(yychar1p && (*yychar1p >= 0 && *yychar1p <= (sizeof(yytname)/sizeof(yytname[0])))) ? yytname[*yychar1p] : "?",
 		s);
 #else
-	fprintf(stderr, "yyerror: line %d: %s\n", yylineno, s);
+	fprintf(stderr, "yyerror: line %d:%d: %s\n", yylineno, yycolumn, s);
 #endif
 }
 
