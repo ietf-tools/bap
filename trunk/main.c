@@ -5,7 +5,7 @@ main()
 #ifdef YYDEBUG
 	extern int yydebug;
 
-	yydebug = 1;
+	yydebug = 0;
 #endif
 	yyparse();
 }

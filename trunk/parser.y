@@ -13,7 +13,7 @@
 
 %token <string> CHARVAL PROSEVAL BINVAL DECVAL HEXVAL RULENAME
 %token <range> BINVALRANGE DECVALRANGE HEXVALRANGE REPEAT
-%token COMMENT WSP EQSLASH CRLF
+%token CWSP EQSLASH CRLF
 
 %type <string> numval
 %type <range> numvalrange
@@ -25,15 +25,10 @@ rulelist: rules
 	;
 
 rules:	  rule
-	| starcwsp cnl
+	| starcwsp CRLF
 	;
 
-starwsp:
-	| WSP
-	;
-
-rule:	starwsp RULENAME definedas elements cnl { printf("Parse rule %s\n", $2); }
-	| error RULENAME definedas elements cnl { printf("Error rule %s\n", $2); }
+rule:	RULENAME definedas elements starcwsp CRLF { printf("Parse rule %s\n", $1); }
 
 	;
 
@@ -41,30 +36,17 @@ definedas:	starcwsp EQSLASH starcwsp
 	| starcwsp '=' starcwsp
 	;
 
-elements:	alternation starcwsp
-	;
-
-cwsp:	{ requirewsp(1); } WSP { requirewsp(0); }
+cwsp:	  CWSP
 	;
 
 starcwsp:
+	| CWSP
 	;
 
-cnl:	  comment
-	| CRLF
-	;
-
-comment:  COMMENT CRLF
-	;
-
-alternation:
-	  concatenation
-	| alternation starcwsp '/' starcwsp concatenation
-	;
-
-concatenation:
+elements:
 	  repetition
-	| concatenation cwsp starcwsp repetition
+	| elements cwsp repetition
+	| elements starcwsp '/' starcwsp repetition
 	;
 
 repetition:
@@ -84,7 +66,7 @@ numvalrange:
 	;
 
 element:
-	  RULENAME		{ printf("element rule %s\n"); }
+	  RULENAME		{ printf("element rule %s\n", $1); }
 	| group	
 	| option
 	| CHARVAL		{ ; }
@@ -93,9 +75,9 @@ element:
 	| PROSEVAL		{ ; }
 	;
 
-group:	'(' starcwsp alternation starcwsp ')'
+group:	'(' starcwsp elements starcwsp ')'
 	;
 
-option:	'[' starcwsp alternation starcwsp ']'
+option:	'[' starcwsp elements starcwsp ']'
 	;
 

@@ -16,12 +16,10 @@ wsp	[ \t]
 
 mycrlf	(\n\r|\r\n|\r|\n)
 
-%s NEEDWSP
 %%
 \"[ !#-\177]*["\r\n]	{ return CHARVAL; }
 \<[ -=?-\177]*>	{ return PROSEVAL; }
-;.*		;
-{rulename}		{ yylval.string = yytext; return RULENAME; }
+{rulename}		{ yylval.string = strdup(yytext); return RULENAME; }
 %b{bit}+-{bit}+	{ return BINVALRANGE; }
 %b{bit}+(\.{bit}+)*	{ return BINVAL; }
 %d{digit}+-{digit}+	{ return DECVALRANGE; }
@@ -31,18 +29,8 @@ mycrlf	(\n\r|\r\n|\r|\n)
 {digit}*\*{digit}*	{ return REPEAT; }
 {digit}+		{ return REPEAT; }
 =\/			{ return EQSLASH; }
-<NEEDWSP>{wsp}		{ return WSP; }
-{mycrlf}?{wsp}+		;
+({wsp}+|(;[^\r\n]*)|{mycrlf}{wsp}+)+	{ return CWSP; }
 {mycrlf}		{ return CRLF; }
-[][{}=/]		{ return yytext[0]; }
+[][()=/]		{ return yytext[0]; }
+.			{ return yytext[0]; }
 %%
-
-void
-requirewsp(int i)
-{
-	if (i) {
-		BEGIN NEEDWSP;
-	} else {
-		BEGIN 0;
-	}
-}
