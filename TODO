@@ -1,2 +1,19 @@
 detect recursive rules
 
+optimize 0*1x to [x].  already do this for 0*1(x).
+
+word-wrap output.
+
+intelligently word-wrap output. (is there such a thing?)
+
+fix output for
+hello = goodbye ( foo
+goodbye = blah
+
+add comments to plaintext strings or ranges
+e.g., %x30-39 ; "0" - "9"
+
+add warning about using %x22 or DQUOTE instead of <">
+
+handle syntax error of missing rule, just leading "="
+ (initial attempts caused shift/reduce or reduce/reduce conflicts!)
