@@ -37,7 +37,7 @@
 #include "y.tab.h"
 
 static const char rcsid[] =
- "$Fenner: abnf-parser/scanner.l,v 1.11 2004/09/17 01:22:40 fenner Exp $";
+ "$Fenner: abnf-parser/scanner.l,v 1.12 2004/09/17 01:34:45 fenner Exp $";
 
 int yylineno = 1;
 int yycolumn = 0;
@@ -71,7 +71,7 @@ mycrlf	(\n\r|\r\n|\r|\n)
    suspect unterminated charval and prosevals. */
 %%
 <SKIP>.*{mycrlf}	{ 	char q = (badchar == '\'') ? '"' : '\'';
-				mywarn("Illegal character %c%c%c - skipping to end of line", q, badchar, q);
+				mywarn(MYERROR, "Illegal character %c%c%c - skipping to end of line", q, badchar, q);
 				yylineno++;
 				yycolumn = 0;
 				BEGIN(INITIAL);
@@ -82,12 +82,12 @@ mycrlf	(\n\r|\r\n|\r|\n)
 			yylval.string = strdup(yytext + 1);
 			p = &yylval.string[strlen(yylval.string) - 1];
 			if (*p != '"') {
-				mywarn("unterminated char-val");
+				mywarn(MYERROR, "unterminated char-val");
 				unput(*p);	/* put the cr or lf back */
 			}
 			*p = '\0';
 			if (*yylval.string == '\0')
-/* warning only */		mywarn("zero-length char-val");
+				mywarn(MYWARNING, "zero-length char-val");
 			return CHARVAL;
 			}
 \<{proseval}[>\r\n]	{
@@ -96,7 +96,7 @@ mycrlf	(\n\r|\r\n|\r|\n)
 			yylval.string = strdup(yytext + 1);
 			p = &yylval.string[strlen(yylval.string) - 1];
 			if (*p != '>') {
-				mywarn("unterminated prose-val");
+				mywarn(MYERROR, "unterminated prose-val");
 				unput(*p);	/* put the cr or lf back */
 			}
 			*p = '\0';
@@ -117,7 +117,7 @@ mycrlf	(\n\r|\r\n|\r|\n)
 			yylval.string = scanstr(yytext + 2, 2);
 			return BINVAL;
 			}
-%b.			{ mywarn("bad bit value");
+%b.			{ mywarn(MYERROR, "bad bit value");
 			  badchar = yytext[2]; BEGIN(SKIP); }
 %d{digit}+(-|\.\.){digit}+	{
 			yycolumn += strlen(yytext);
@@ -129,7 +129,7 @@ mycrlf	(\n\r|\r\n|\r|\n)
 			yylval.string = scanstr(yytext + 2, 10);
 			return DECVAL;
 			}
-%d.			{ mywarn("bad decimal value");
+%d.			{ mywarn(MYERROR, "bad decimal value");
 			  badchar = yytext[2]; BEGIN(SKIP); }
 %x{hexdig}+(-|\.\.){hexdig}+	{
 			yycolumn += strlen(yytext);
@@ -141,7 +141,7 @@ mycrlf	(\n\r|\r\n|\r|\n)
 			yylval.string = scanstr(yytext + 2, 16);
 			return HEXVAL;
 			}
-%x.			{ mywarn("bad hex value");
+%x.			{ mywarn(MYERROR, "bad hex value");
 			  badchar = yytext[2]; BEGIN(SKIP); }
 {digit}*\*{digit}*	{
 			char *ep;
@@ -149,12 +149,12 @@ mycrlf	(\n\r|\r\n|\r|\n)
 			yycolumn += strlen(yytext);
 			yylval.range.lo = strtoul(yytext, &ep, 10);
 			if (*ep != '*') {
-			    mywarn("internal scanner error 1");
+			    mywarn(MYERROR, "internal scanner error 1");
 			    yylval.range.hi = -1;
 			} else {
 			    yylval.range.hi = strtoul(ep + 1, &ep, 10);
 			    if (*ep) {
-				mywarn("internal scanner error 2");
+				mywarn(MYERROR, "internal scanner error 2");
 				yylval.range.hi = -1;
 			    } else if (yylval.range.hi == 0)
 				yylval.range.hi = -1;
@@ -167,7 +167,7 @@ mycrlf	(\n\r|\r\n|\r|\n)
 			yycolumn += strlen(yytext);
 			yylval.range.hi = yylval.range.lo = strtoul(yytext, &ep, 10);
 			if (*ep) {
-			    mywarn("internal scanner error 3");
+			    mywarn(MYERROR, "internal scanner error 3");
 			    yylval.range.hi = yylval.range.lo = 42;
 			}
 			return REPEAT;
@@ -208,14 +208,8 @@ scanrange(char *p, int base, struct range *r)
 	char *ep;
 
 	r->lo = strtoul(p, &ep, base);
-	if (r->lo > 255) {
-		mywarn("invalid char value");
-		r->lo = 0;
-		r->hi = 255;
-		return;
-	}
 	if (*ep != '-' && *ep != '.') {
-		mywarn("internal scanner error 4");
+		mywarn(MYERROR, "internal scanner error 4");
 		r->hi = r->lo;
 		return;
 	}
@@ -224,19 +218,15 @@ scanrange(char *p, int base, struct range *r)
 			badchar = '.';
 			BEGIN(SKIP);
 		}
-		mywarn("Ranges use \"-\", not \"..\".");
+		mywarn(MYERROR, "Ranges use \"-\", not \"..\".");
 		ep++;
 	}
 	r->hi = strtoul(ep + 1, &ep, base);
 	if (*ep) {
-		mywarn("internal scanner error 5");
-	}
-	if (r->hi > 255) {
-		mywarn("invalid char value");
-		r->hi = 255;
+		mywarn(MYERROR, "internal scanner error 5");
 	}
 	if (r->hi < r->lo) {
-		mywarn("inverted range");
+		mywarn(MYERROR, "inverted range");
 	}
 	return;
 }
@@ -251,18 +241,18 @@ scanstr(char *p, int base)
 
 	do {
 		i = strtoul(p, &ep, base);
-		if (i > 255) {
-			mywarn("invalid char value");
+		if (i > 255) {	/* XXX */
+			mywarn(MYWARNING, "I can't handle this legal ABNF char value");
 			i = 255;
 		}
 		if (i == 0) {
-			mywarn("This parser will truncate strings at %x00");
+			mywarn(MYERROR, "This parser will truncate strings at %x00");
 		}
 		*b++ = i;
 		p = ep + 1;
 	} while (*ep == '.');
 	if (*ep)
-		mywarn("internal scanner error 6");
+		mywarn(MYERROR, "internal scanner error 6");
 	*b++ = '\0';
 	return strdup(buf);
 }

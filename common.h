@@ -1,6 +1,6 @@
 /*
  * Bill's ABNF Parser
- * $Fenner: abnf-parser/common.h,v 1.6 2002/07/30 17:05:01 fenner Exp $
+ * $Fenner: abnf-parser/common.h,v 1.7 2002/08/08 05:24:45 fenner Exp $
  */
 
 struct range {
@@ -61,8 +61,8 @@ typedef struct object {
 				    int flags;
 			    } termstr;
 			    struct {
-				    char lo;
-				    char hi;
+				    unsigned int lo;
+				    unsigned int hi;
 			    } termrange;
 			    char *proseval;
 			} e;
@@ -74,6 +74,9 @@ typedef struct object {
 
 struct rule *findrule(char *);
 
-void mywarn(const char *, ...);
+void mywarn(int, const char *, ...);
+#define	MYERROR		1
+#define	MYWARNING	2
+#define	MYFYI		3
 
 void printobj(object *, int);

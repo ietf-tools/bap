@@ -37,7 +37,7 @@
 #include "common.h"
 
 static const char rcsid[] =
- "$Fenner: abnf-parser/main.c,v 1.20 2004/09/17 01:22:40 fenner Exp $";
+ "$Fenner: abnf-parser/main.c,v 1.21 2004/09/17 01:34:45 fenner Exp $";
 static const char versionstring[] = "1.0";
 
 static void printobj_r(object *, int, int);
@@ -340,14 +340,15 @@ printobj_r(object *o, int parenttype, int tflag)
 				printf("{TERMRANGE}");
 			printrep(&o->u.e.repetition);
 			printf("%%x%02X-%02X",
-				(unsigned char)o->u.e.e.termrange.lo,
-				(unsigned char)o->u.e.e.termrange.hi);
+				o->u.e.e.termrange.lo,
+				o->u.e.e.termrange.hi);
+			/* XXX isprint does not handle non-ASCII */
 			if (c2flag &&
-			    isprint((unsigned char)o->u.e.e.termrange.lo) &&
-			    isprint((unsigned char)o->u.e.e.termrange.hi)) {
+			    isprint(o->u.e.e.termrange.lo) &&
+			    isprint(o->u.e.e.termrange.hi)) {
 				printf(" ; '%c'-'%c'\n",
-					(unsigned char)o->u.e.e.termrange.lo,
-					(unsigned char)o->u.e.e.termrange.hi);
+					o->u.e.e.termrange.lo,
+					o->u.e.e.termrange.hi);
 			}
 			break;
 		case T_PROSE:
