@@ -4,8 +4,8 @@
 #include <unistd.h>
 #include "common.h"
 
-void printobj(object *);
-static void printobj_r(object *, int);
+void printobj(object *, int);
+static void printobj_r(object *, int, int);
 
 #define	MAXRULE		1000	/* XXX */
 
@@ -13,6 +13,7 @@ struct rule *rules = NULL;
 
 int cflag = 0;		/* suppress line number comments */
 int tflag = 0;		/* print type info */
+int permissive = 1;	/* Be permissive (e.g. accept '|') */
 
 void
 usage(void)
@@ -62,7 +63,7 @@ main(int argc, char **argv)
 	for (r = rules; r; r = r->next) {
 		if (r->rule) {
 			printf("%s = ", r->name);
-			printobj(r->rule);
+			printobj(r->rule, tflag);
 			if (!cflag)
 				printf(" ; line %d", r->line);
 			printf("\n");
@@ -94,10 +95,11 @@ printrep(struct range *rep)
 }
 
 void
-printobj(object *o)
+printobj(object *o, int tflag)
 {
-	printobj_r(o, T_GROUP);	/* T_GROUP means don't put grouping characters
-				 * around the top level. */
+	/* T_GROUP means don't put grouping characters
+	 * around the top level. */
+	printobj_r(o, T_GROUP, tflag);
 }
 
 /*
@@ -109,7 +111,7 @@ printobj(object *o)
 #define	NOPAREN(o)	((o->next == NULL) && (o->type != T_ALTERNATION) && (o->u.e.repetition.lo == 1 && o->u.e.repetition.hi == 1))
 
 static void
-printobj_r(object *o, int parenttype)
+printobj_r(object *o, int parenttype, int tflag)
 {
 	int iterating = 0;
 
@@ -125,9 +127,9 @@ printobj_r(object *o, int parenttype)
 				printf("{ALTERNATION}");
 			if (o->next)
 				printf("( ");
-			printobj_r(o->u.alternation.left, o->type);
+			printobj_r(o->u.alternation.left, o->type, tflag);
 			printf(" / ");
-			printobj_r(o->u.alternation.right, o->type);
+			printobj_r(o->u.alternation.right, o->type, tflag);
 			if (o->next)
 				printf(" )");
 			break;
@@ -148,7 +150,7 @@ printobj_r(object *o, int parenttype)
 				if (!NOPAREN(o->u.e.e.group))
 					printf("( ");
 			}
-			printobj_r(o->u.e.e.group, o->type);
+			printobj_r(o->u.e.e.group, o->type, tflag);
 			if (o->u.e.repetition.lo == 0 &&
 			    o->u.e.repetition.hi == 1) {
 				printf(" ]");
