@@ -68,3 +68,7 @@ typedef struct object {
 #define	F_CASESENSITIVE		1	/* termstr.str is case sensitive */
 
 struct rule *findrule(char *);
+
+void mywarn(const char *, ...);
+
+void printobj(object *, int);
