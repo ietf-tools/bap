@@ -5,10 +5,12 @@ struct range {
 };
 
 struct rule {
-	char *name;
-	int line;
-	struct object *rule;
-	struct rule *next;
+	char *name;		/* as defined or used */
+	char *lowername;	/* for hash key */
+	int line;		/* line of definition */
+	struct object *rule;	/* definition */
+	struct rule *next;	/* doubly */
+	struct rule *prev;	/* linked list */
 };
 
 /*
@@ -64,3 +66,5 @@ typedef struct object {
 } object;
 
 #define	F_CASESENSITIVE		1	/* termstr.str is case sensitive */
+
+struct rule *findrule(char *);
