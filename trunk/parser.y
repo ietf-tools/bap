@@ -135,6 +135,10 @@ repetition:
 					$$->u.e.repetition.lo = $1.lo;
 				$$->u.e.repetition.hi = $1.hi;
 				}
+	| REPEAT cwsp		{
+				yyerror("No whitespace allowed between repeat and element.");
+				YYERROR;
+				}
 	;
 
 numval:   BINVAL
