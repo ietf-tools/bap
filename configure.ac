@@ -1,6 +1,5 @@
-dnl $Fenner$
+dnl $Fenner: abnf-parser/configure.in,v 1.1 2002/07/30 17:06:41 fenner Exp $
 
-AC_REVISION($Fenner$)
 AC_INIT(parser.y)
 
 AC_PROG_YACC
