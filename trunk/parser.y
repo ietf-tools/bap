@@ -212,7 +212,7 @@ element:
 				}
 	| PROSEVAL		{
 				$$ = newobj(T_PROSE);
-				$$->u.proseval = $1;
+				$$->u.e.e.proseval = $1;
 				}
 	;
 
@@ -269,6 +269,7 @@ newobj(int type)
 		case T_GROUP:
 		case T_TERMSTR:
 		case T_TERMRANGE:
+		case T_PROSE:
 			o->u.e.repetition.lo = 1;
 			o->u.e.repetition.hi = 1;
 			break;
