@@ -5,7 +5,7 @@
 #include "common.h"
 
 static const char rcsid[] =
- "$Fenner$";
+ "$Fenner: abnf-parser/main.c,v 1.12 2002/07/30 17:05:00 fenner Exp $";
 
 static void printobj_r(object *, int, int);
 
@@ -74,7 +74,7 @@ main(int argc, char **argv)
 		usage();
 
 	yyparse();
-	if (!qflag)
+	if (!qflag) {
 		for (r = rules; r; r = r->next) {
 			if (r->rule) {
 				printf("%s = ", r->name);
@@ -88,6 +88,13 @@ main(int argc, char **argv)
 			if (r->next == rules)
 				break;
 		}
+		for (r = rules; r; r = r->next) {
+			if (r->used == 0)
+				printf("; %s defined but not used\n", r->name);
+			if (r->next == rules)
+				break;
+		}
+	}
 	hdestroy();
 	exit(0);
 }
@@ -153,6 +160,8 @@ printobj_r(object *o, int parenttype, int tflag)
 				printf("{RULE}");
 			printrep(&o->u.e.repetition);
 			printf("%s", o->u.e.e.rule.name);
+			if (o->u.e.e.rule.rule)
+				o->u.e.e.rule.rule->used = 1;
 			break;
 		case T_GROUP:
 			if (tflag)
