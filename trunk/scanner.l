@@ -37,7 +37,7 @@
 #include "y.tab.h"
 
 static const char rcsid[] =
- "$Fenner: abnf-parser/scanner.l,v 1.14 2004/10/11 17:35:35 fenner Exp $";
+ "$Fenner: abnf-parser/scanner.l,v 1.15 2005/02/03 05:37:37 fenner Exp $";
 
 int yylineno = 1;
 int yycolumn = 0;
@@ -113,41 +113,41 @@ mycrlf	(\n\r|\r\n|\r|\n)
 			yylval.string = strdup(yytext);
 			return RULENAME;
 			}
-%b{bit}+(-|\.\.){bit}+		{
+%[Bb]{bit}+(-|\.\.){bit}+		{
 			yycolumn += strlen(yytext);
 			scanrange(yytext + 2, 2, &yylval.range);
 			return BINVALRANGE;
 			}
-%b{bit}+(\.{bit}+)*	{
+%[Bb]{bit}+(\.{bit}+)*	{
 			yycolumn += strlen(yytext);
 			yylval.string = scanstr(yytext + 2, 2);
 			return BINVAL;
 			}
-%b.			{ mywarn(MYERROR, "bad bit value");
+%[Bb].			{ mywarn(MYERROR, "bad bit value");
 			  badchar = yytext[2]; BEGIN(SKIP); }
-%d{digit}+(-|\.\.){digit}+	{
+%[Dd]{digit}+(-|\.\.){digit}+	{
 			yycolumn += strlen(yytext);
 			scanrange(yytext + 2, 10, &yylval.range);
 			return DECVALRANGE;
 			}
-%d{digit}+(\.{digit}+)*	{
+%[Dd]{digit}+(\.{digit}+)*	{
 			yycolumn += strlen(yytext);
 			yylval.string = scanstr(yytext + 2, 10);
 			return DECVAL;
 			}
-%d.			{ mywarn(MYERROR, "bad decimal value");
+%[Dd].			{ mywarn(MYERROR, "bad decimal value");
 			  badchar = yytext[2]; BEGIN(SKIP); }
-%x{hexdig}+(-|\.\.){hexdig}+	{
+%[Xx]{hexdig}+(-|\.\.){hexdig}+	{
 			yycolumn += strlen(yytext);
 			scanrange(yytext + 2, 16, &yylval.range);
 			return HEXVALRANGE;
 			}
-%x{hexdig}+(\.{hexdig}+)*	{
+%[Xx]{hexdig}+(\.{hexdig}+)*	{
 			yycolumn += strlen(yytext);
 			yylval.string = scanstr(yytext + 2, 16);
 			return HEXVAL;
 			}
-%x.			{ mywarn(MYERROR, "bad hex value");
+%[Xx].			{ mywarn(MYERROR, "bad hex value");
 			  badchar = yytext[2]; BEGIN(SKIP); }
 {digit}*\*{digit}*	{
 			char *ep;
