@@ -1,5 +1,5 @@
 #
-# $Fenner$
+# $Fenner: abnf-parser/Makefile.in,v 1.1 2002/07/30 17:06:40 fenner Exp $
 #
 
 OBJS=	parser.o scanner.o main.o @LIBOBJS@
@@ -8,11 +8,11 @@ D=	-g
 CFLAGS=	@DEFS@ -DYYDEBUG ${D}
 YACC=	@YACC@ -v
 
-p:	${OBJS}
+bap:	${OBJS}
 	${CC} -o $@ ${D} ${OBJS} -ll
 
 scanner.c:	scanner.l
 parser.c:	parser.y
 
 clean:
-	rm -f p scanner.c parser.c $(OBJS)
+	rm -f bap scanner.c parser.c $(OBJS)
