@@ -1,5 +1,8 @@
 #include <stdio.h>
+#include <search.h>
 #include "common.h"
+
+#define	MAXRULE		1000	/* XXX */
 
 struct rule *rules = NULL;
 
@@ -11,12 +14,21 @@ main()
 
 	yydebug = 0;
 #endif
+	hcreate(MAXRULE);
+
 	yyparse();
 	for (r = rules; r; r = r->next) {
-		printf("%s <line %d> = ", r->name, r->line);
-		printobj(r->rule);
-		printf("\n");
+		if (r->rule) {
+			printf("%s = ", r->name);
+			printobj(r->rule);
+			printf(" ; line %d\n", r->line);
+		} else {
+			printf("; %s = <UNDEFINED>\n", r->name);
+		}
+		if (r->next == rules)
+			break;
 	}
+	hdestroy();
 }
 
 void
@@ -114,4 +126,48 @@ printobj_r(object *o, int parenttype)
 	}
 	if (iterating)
 		printf(" )");
+}
+
+struct rule *
+findrule(char *name)
+{
+	char *lowername;
+	char *p, *q;
+	ENTRY *e;
+	ENTRY search;
+	struct rule *r;
+
+	lowername = malloc(strlen(name) + 1);
+	for (p = name, q = lowername; *p; p++, q++)
+		if (isupper(*p))
+			*q = tolower(*p);
+		else
+			*q = *p;
+	*q = '\0';
+	search.key = lowername;
+	search.data = NULL;
+	e = hsearch(search, FIND);
+	if (e == NULL) {
+		r = calloc(1, sizeof(struct rule));
+		r->name = name;
+		r->lowername = lowername;
+		search.data = r;
+		e = hsearch(search, ENTER);
+		if (e == NULL) {
+			fprintf(stderr, "hash table full -- increase MAXRULE\n");
+			exit(1);
+		}
+		if (rules) {
+			r->next = rules;
+			r->prev = rules->prev;
+			rules->prev->next = r;
+			rules->prev = r;
+		} else {
+			rules = r->next = r->prev = r;
+		}
+		return r;
+	} else {
+		free(lowername);
+		return (struct rule *)e->data;
+	}
 }

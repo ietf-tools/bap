@@ -1,10 +1,11 @@
-OBJS=	parser.o scanner.o main.o
+OBJS=	parser.o scanner.o main.o hcreate.o
 
-CFLAGS=	-DYYERROR_VERBOSE -DYYDEBUG
+D=	-g
+CFLAGS=	-DYYERROR_VERBOSE -DYYDEBUG ${D}
 YACC=	bison -y -v
 
 p:	${OBJS}
-	cc -o $@ ${OBJS} -ll
+	cc -o $@ ${D} ${OBJS} -ll
 
 scanner.c:	scanner.l
 parser.c:	parser.y

@@ -12,7 +12,6 @@ extern int yylineno;
 
 int defline;
 extern struct rule *rules;
-struct rule *lastrule = NULL;
 
 /* HACK-O-ROONIE for yyerror verbosity */
 int *yystatep = NULL;
@@ -56,16 +55,29 @@ recover:
 
 rule:	recover RULENAME { defline = yylineno } definedas rulerest {
 		struct rule *r;
-		r = calloc(sizeof(struct rule), 1);
-		r->name = $2;
-		r->line = defline;
-		r->rule = $5;
-		r->next = NULL;
-		if (lastrule == NULL)
-			rules = r;
-		else
-			lastrule->next = r;
-		lastrule = r;
+		r = findrule($2);
+		if (r->name && strcmp(r->name, $2))
+			yyerror("Rule %s previously %s as %s", $2,
+				r->rule ? "defined" : "referred to", r->name);
+		if (r->rule)
+			yyerror("Rule %s was already defined on line %d",
+				r->line);
+		else {
+			r->name = $2;
+			r->line = defline;
+			r->rule = $5;
+			if (r->next != rules) {
+				/* unlink r from where it is and move to the end */
+				r->prev->next = r->next;
+				r->next->prev = r->prev;
+				if (rules == r)
+					rules = r->next;
+				r->prev = rules->prev;
+				rules->prev = r;
+				r->prev->next = r;
+				r->next = rules;
+			}
+		}
 		}
 	;
 
@@ -170,7 +182,9 @@ element:
 	  RULENAME		{
 				$$ = newobj(T_RULE);
 				$$->u.e.e.rule.name = $1;
-				$$->u.e.e.rule.rule = NULL;	/* lookup */
+				$$->u.e.e.rule.rule = findrule($1);
+				if (strcmp($1, $$->u.e.e.rule.rule->name))
+					yyerror("Rule %s referred to as %s", $$->u.e.e.rule.rule->name, $1);
 				}
 	| group	
 	| option
