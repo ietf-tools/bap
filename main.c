@@ -5,7 +5,7 @@
 #include "common.h"
 
 static const char rcsid[] =
- "$Fenner: abnf-parser/main.c,v 1.14 2004/03/18 01:10:39 fenner Exp $";
+ "$Fenner: abnf-parser/main.c,v 1.15 2004/06/24 19:56:18 fenner Exp $";
 
 static void printobj_r(object *, int, int);
 
@@ -83,13 +83,13 @@ main(int argc, char **argv)
 					printf(" ; line %d", r->line);
 				printf("\n");
 			} else {
-				printf("; %s = <UNDEFINED>\n", r->name);
+				printf("; %s UNDEFINED\n", r->name);
 			}
 			if (r->next == rules)
 				break;
 		}
 		for (r = rules; r; r = r->next) {
-			if (r->used == 0)
+			if (r->used == 0 && r->rule)
 				printf("; %s defined but not used\n", r->name);
 			if (r->next == rules)
 				break;
