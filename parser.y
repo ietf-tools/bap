@@ -10,7 +10,7 @@
 #include "common.h"
 
 static const char rcsid[] =
- "$Fenner: abnf-parser/parser.y,v 1.14 2004/05/19 15:37:08 fenner Exp $";
+ "$Fenner: abnf-parser/parser.y,v 1.15 2004/06/25 03:50:55 fenner Exp $";
 
 extern int yylineno, yycolumn;
 
@@ -157,7 +157,7 @@ elements:
 		}
 	| elements repetition {
 		object *o = $1;
-		mywarn("Concatenation of adjacent elements (missing whitespace?)");
+		mywarn("Concatenation of adjacent elements is not allowed (missing whitespace?)");
 		printf("; line %d ... trying to concatenate ", yylineno);
 		if (o->type == T_ALTERNATION)
 			o = o->u.alternation.right;
@@ -216,7 +216,7 @@ element:
 				$$->u.e.e.rule.name = $1;
 				$$->u.e.e.rule.rule = findrule($1);
 				if (strcmp($1, $$->u.e.e.rule.rule->name))
-					mywarn("Rule %s referred to as %s", $$->u.e.e.rule.rule->name, $1);
+					mywarn("Rule %s defined on line %d referred to as %s", $$->u.e.e.rule.rule->name, $$->u.e.e.rule.rule->line, $1);
 				}
 	| group	
 	| option
