@@ -17,6 +17,8 @@ extern struct rule *rules;
 int *yystatep = NULL;
 int *yychar1p = NULL;
 
+int pipewarn = 0;
+
 object *newobj(int);
 %}
 
@@ -53,7 +55,7 @@ recover:
 	| error CRLF
 	;
 
-rule:	recover RULENAME { defline = yylineno } definedas rulerest {
+rule:	recover RULENAME { defline = yylineno; } definedas rulerest {
 		struct rule *r;
 		r = findrule($2);
 		if (r->name && strcmp(r->name, $2))
@@ -119,21 +121,25 @@ elements:
 		$$->u.alternation.right = $5;
 		}
 	| elements starcwsp '|' starcwsp repetition	{
+		if (!pipewarn) {
+			yyerror("'/' is the alternation character in ABNF");
+			pipewarn = 1;
+		}
 		$$ = newobj(T_ALTERNATION);
 		$$->u.alternation.left = $1;
 		$$->u.alternation.right = $5;
 		}
 	| elements repetition {
 		object *o = $1;
-		yyerror("Concatenation of adjacent elements!?");
-		printf("; ... trying to concatenate ");
+		yyerror("Concatenation of adjacent elements (missing whitespace?)");
+		printf("; line %d ... trying to concatenate ", yylineno);
 		if (o->type == T_ALTERNATION)
 			o = o->u.alternation.right;
 		while (o->next)	/* n**2, do this better */
 			o = o->next;
-		printobj(o);
-		printf(" with ");
-		printobj($2);
+		printobj(o, 1);
+		printf("\n; ... with ");
+		printobj($2, 1);
 		printf("\n");
 		YYERROR;
 		}
