@@ -37,7 +37,7 @@
 #include "y.tab.h"
 
 static const char rcsid[] =
- "$Fenner: abnf-parser/scanner.l,v 1.15 2005/02/03 05:37:37 fenner Exp $";
+ "$Fenner: abnf-parser/scanner.l,v 1.16 2005/03/01 17:24:58 fenner Exp $";
 
 int yylineno = 1;
 int yycolumn = 0;
@@ -181,6 +181,12 @@ mycrlf	(\n\r|\r\n|\r|\n)
 =\/			{ yycolumn += 2; return EQSLASH; }
 ({wsp}+|(;[^\r\n]*)|{mycrlf}{wsp}+)+	{ char *p = yytext;
 				while (*p) {
+					/* TO DO:
+					 * deal with indent if we
+					 * have one set - if a blank
+					 * line or a comment is indented
+					 * less than enough, we warn
+					 * about it. */
 					if (*p == '\r') {
 						gotcr();
 						if (*(++p) == '\n')
