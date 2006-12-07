@@ -1,16 +1,17 @@
 /*
  * Bill's ABNF Parser
- * $Fenner: abnf-parser/common.h,v 1.7 2002/08/08 05:24:45 fenner Exp $
+ * $Fenner: abnf-parser/common.h,v 1.8 2004/10/11 17:14:11 fenner Exp $
  */
 
 struct range {
-	int lo;
-	int hi;
+	unsigned int lo;
+	unsigned int hi;
 };
 
 struct rule {
 	char *name;		/* as defined or used */
 	char *lowername;	/* for hash key */
+	char *file;		/* filename of definition */
 	int line;		/* line of definition */
 	struct object *rule;	/* definition */
 	int used;		/* was it referenced? */
