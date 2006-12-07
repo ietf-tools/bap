@@ -55,13 +55,6 @@ the WSP-only line is indented wrong.
 return error if accepting ".." as range
 
 
-ranges: 0..4294967295 is not backwards (unsigned!)
-
-
-error: concatenating adjacent strings is done without
- regard to repeats.
-
-
 Change error:
   foo = bar
   baz
