@@ -24,3 +24,47 @@ match.
 
 
 Play madlibs with the grammar, to see what else it might accept
+
+
+
+
+why doesn't
+foo = bar *
+ baz
+
+fail?
+
+
+
+
+check out indentation rules:
+   a = X
+  ; this comment is indented wrong.
+    Y
+
+and
+   a = X$
+ $
+     Y$
+
+the WSP-only line is indented wrong.
+
+
+
+
+return error if accepting ".." as range
+
+
+ranges: 0..4294967295 is not backwards (unsigned!)
+
+
+error: concatenating adjacent strings is done without
+ regard to repeats.
+
+
+Change error:
+  foo = bar
+  baz
+to not just say that baz is not a valid new rule, but
+also might be an indentation error.  Do this only if
+there was a def'n on the rpeviousline with no whitespace?
