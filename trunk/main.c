@@ -1,6 +1,6 @@
 /*
  * Bill's ABNF Parser
- * Copyright 2002-2004 William C. Fenner <fenner@research.att.com>
+ * Copyright 2002-2006 William C. Fenner <fenner@fenron.com>
  *  All rights reserved.
  * 
  * Redistribution and use in source and binary forms, with or without
@@ -37,8 +37,8 @@
 #include "common.h"
 
 static const char rcsid[] =
- "$Fenner: abnf-parser/main.c,v 1.21 2004/09/17 01:34:45 fenner Exp $";
-static const char versionstring[] = "1.0";
+ "$Fenner: abnf-parser/main.c,v 1.22 2004/10/11 17:14:11 fenner Exp $";
+static const char versionstring[] = "1.1";
 
 static void printobj_r(object *, int, int);
 static void canonify(struct rule *);
@@ -186,6 +186,8 @@ canonify_r(struct object **op)
 			break;
 		case T_TERMSTR:
 			while (o->next && o->next->type == T_TERMSTR &&
+			    o->u.e.repetition.lo == 1 && o->u.e.repetition.hi == 1 &&
+			    o->next->u.e.repetition.lo == 1 && o->next->u.e.repetition.hi == 1 &&
 			    ((o->u.e.e.termstr.flags & F_CASESENSITIVE) ==
 			     (o->next->u.e.e.termstr.flags & F_CASESENSITIVE))) {
 				int len = strlen(o->u.e.e.termstr.str) + strlen(o->next->u.e.e.termstr.str);
