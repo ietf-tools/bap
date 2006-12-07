@@ -38,14 +38,17 @@
 #include "common.h"
 
 static const char rcsid[] =
- "$Fenner: abnf-parser/parser.y,v 1.19 2004/09/17 03:54:26 fenner Exp $";
+ "$Fenner: abnf-parser/parser.y,v 1.20 2004/10/11 17:14:11 fenner Exp $";
 
 extern int yylineno, yycolumn;
 
 int defline;
 extern struct rule *rules;
 
-#ifdef YYERROR_VERBOSE
+#if defined(YYERROR_VERBOSE) && defined(YYBISON)
+#define MYERROR_VERBOSE
+#endif
+#ifdef MYERROR_VERBOSE
 /* HACK-O-ROONIE for yyerror verbosity */
 int *yystatep = NULL;
 int *yychar1p = NULL;
@@ -76,7 +79,7 @@ object *newobj(int);
 %%
 
 begin:	{
-#ifdef YYERROR_VERBOSE
+#ifdef MYERROR_VERBOSE
 	/* HACK-O-RAMA */ yystatep = &yystate; yychar1p = &yychar1;
 #endif
 		} rulelist
@@ -328,7 +331,7 @@ mywarn(int level, const char *fmt, ...)
 int
 yyerror(char *s)
 {
-#ifdef YYERROR_VERBOSE
+#ifdef MYERROR_VERBOSE
 	mywarn(MYERROR, "state %d, token %s: %s", 
 		*yystatep,
 		(yychar1p && (*yychar1p >= 0 && *yychar1p <= (sizeof(yytname)/sizeof(yytname[0])))) ? yytname[*yychar1p] : "?",
