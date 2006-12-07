@@ -17,6 +17,3 @@
 
 /* Define to the version of this package. */
 #undef PACKAGE_VERSION
-
-/* define if we're using bison */
-#undef YYERROR_VERBOSE
