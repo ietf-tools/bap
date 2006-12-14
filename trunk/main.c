@@ -37,7 +37,7 @@
 #include "common.h"
 
 static const char rcsid[] =
- "$Fenner: abnf-parser/main.c,v 1.22 2004/10/11 17:14:11 fenner Exp $";
+ "$Fenner: abnf-parser/main.c,v 1.23 2006/12/07 22:45:10 fenner Exp $";
 static const char versionstring[] = "1.1";
 
 static void printobj_r(object *, int, int);
@@ -234,7 +234,7 @@ printrep(struct range *rep)
 		return;
 	}
 	printf("*");
-	if (rep->hi > 0)
+	if (rep->hi != -1)
 		printf("%d", rep->hi);
 }
 
