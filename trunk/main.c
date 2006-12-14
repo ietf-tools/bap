@@ -39,8 +39,8 @@
 #include "common.h"
 
 static const char rcsid[] =
- "$Fenner: abnf-parser/main.c,v 1.24 2006/12/14 04:53:14 fenner Exp $";
-static const char versionstring[] = "1.1";
+ "$Fenner: abnf-parser/main.c,v 1.25 2006/12/14 05:02:24 fenner Exp $";
+static const char versionstring[] = PACKAGE_VERSION;
 
 static void printobj_r(object *, int, int);
 static void canonify(struct rule *);
