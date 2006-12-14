@@ -34,11 +34,12 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdarg.h>
+#include <string.h>
 
 #include "common.h"
 
 static const char rcsid[] =
- "$Fenner: abnf-parser/parser.y,v 1.20 2004/10/11 17:14:11 fenner Exp $";
+ "$Fenner: abnf-parser/parser.y,v 1.21 2006/12/07 22:37:52 fenner Exp $";
 
 extern int yylineno, yycolumn;
 
@@ -57,6 +58,8 @@ int *yychar1p = NULL;
 int pipewarn = 0;
 
 object *newobj(int);
+int yyerror(char *);
+int yylex(void);
 %}
 
 %union {
@@ -339,6 +342,7 @@ yyerror(char *s)
 #else
 	mywarn(MYERROR, "%s\n", s);
 #endif
+	return 0;
 }
 
 object *
