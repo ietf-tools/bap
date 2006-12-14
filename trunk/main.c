@@ -34,10 +34,12 @@
 #include <stdlib.h>
 #include <search.h>
 #include <unistd.h>
+#include <ctype.h>
+#include <string.h>
 #include "common.h"
 
 static const char rcsid[] =
- "$Fenner: abnf-parser/main.c,v 1.23 2006/12/07 22:45:10 fenner Exp $";
+ "$Fenner: abnf-parser/main.c,v 1.24 2006/12/14 04:53:14 fenner Exp $";
 static const char versionstring[] = "1.1";
 
 static void printobj_r(object *, int, int);
@@ -54,6 +56,8 @@ int tflag = 0;		/* print type info */
 int permissive = 1;	/* Be permissive (e.g. accept '|') */
 int qflag = 0;		/* quiet */
 int canon = 1;		/* canonify */
+
+int yyparse(void);
 
 void
 usage(void)
