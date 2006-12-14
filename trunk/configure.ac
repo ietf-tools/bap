@@ -1,4 +1,4 @@
-dnl $Fenner: abnf-parser/configure.ac,v 1.9 2006/12/07 22:35:00 fenner Exp $
+dnl $Fenner: abnf-parser/configure.ac,v 1.10 2006/12/14 05:05:20 fenner Exp $
 dnl
 dnl Boy does modern autoconf make it hard to have a small ./configure.
 dnl Sorry that it's so huge for almost no configuration.
@@ -18,9 +18,13 @@ fi
 
 dnl The bap -d argument only works with bison, so enable it
 dnl  if we're using bison.
-if test "$ac_cv_prog_YACC" = "bison -y"; then
-	AC_DEFINE(YYERROR_VERBOSE, 1, [define if we're using bison])
-fi
+dnl
+dnl Unfortunately, the bison internals that my YYERROR_VERBOSE
+dnl code tweaks changed in bison 2.1, and I haven't taken the
+dnl time to track it down, so skip this test for now.
+dnl if test "$ac_cv_prog_YACC" = "bison -y"; then
+dnl	AC_DEFINE(YYERROR_VERBOSE, 1, [define if we're using bison])
+dnl fi
 
 AC_REPLACE_FUNCS(hcreate)
 
