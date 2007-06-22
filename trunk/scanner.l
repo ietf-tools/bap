@@ -1,7 +1,7 @@
 %{
 /*
  * Bill's ABNF parser.
- * Copyright 2002-2004 William C. Fenner <fenner@research.att.com>
+ * Copyright 2002-2007 William C. Fenner <fenner@fenron.com>
  *  All rights reserved.
  * 
  * Redistribution and use in source and binary forms, with or without
@@ -37,7 +37,7 @@
 #include "y.tab.h"
 
 static const char rcsid[] =
- "$Fenner: abnf-parser/scanner.l,v 1.16 2005/03/01 17:24:58 fenner Exp $";
+ "$Fenner: abnf-parser/scanner.l,v 1.17 2006/06/16 01:21:03 fenner Exp $";
 
 int yylineno = 1;
 int yycolumn = 0;
