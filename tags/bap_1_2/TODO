@@ -1,0 +1,63 @@
+detect recursive rules
+
+optimize 0*1x to [x].  already do this for 0*1(x).
+
+word-wrap output.
+
+intelligently word-wrap output. (is there such a thing?)
+
+handle syntax error of missing rule, just leading "="
+ (initial attempts caused shift/reduce or reduce/reduce conflicts!)
+
+canonify "a" / "A" (really "a"/foo/bar/baz/zip/dop/"A")
+
+canonify "foo / foo"
+
+
+Read in dependencies (including a built-in core.abnf?), don't check
+their syntax and don't output them, just read in the rule names.
+
+
+
+Parse inputs based on the grammar, say report whether or not they
+match.
+
+
+Play madlibs with the grammar, to see what else it might accept
+
+
+
+
+why doesn't
+foo = bar *
+ baz
+
+fail?
+
+
+
+
+check out indentation rules:
+   a = X
+  ; this comment is indented wrong.
+    Y
+
+and
+   a = X$
+ $
+     Y$
+
+the WSP-only line is indented wrong.
+
+
+
+
+return error if accepting ".." as range
+
+
+Change error:
+  foo = bar
+  baz
+to not just say that baz is not a valid new rule, but
+also might be an indentation error.  Do this only if
+there was a def'n on the rpeviousline with no whitespace?
