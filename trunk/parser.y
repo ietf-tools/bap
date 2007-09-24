@@ -39,7 +39,7 @@
 #include "common.h"
 
 static const char rcsid[] =
- "$Fenner: abnf-parser/parser.y,v 1.21 2006/12/07 22:37:52 fenner Exp $";
+ "$Fenner: abnf-parser/parser.y,v 1.22 2006/12/14 05:02:15 fenner Exp $";
 
 extern int yylineno, yycolumn;
 
@@ -108,7 +108,7 @@ rule:	recover RULENAME { defline = yylineno; } definedas rulerest {
 
 		if ($4 == 0 || r->name == NULL || r->rule == NULL) {	/* = */
 			if ($4) {
-				mywarn(MYERROR, "Rule %s does not yet exist; treating /= as =", $2);
+				mywarn(MYERROR, "Rule %s does not yet exist; treating =/ as =", $2);
 			}
 			if (r->name && strcmp(r->name, $2))
 				if (r->rule)
