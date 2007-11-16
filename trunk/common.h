@@ -1,6 +1,6 @@
 /*
  * Bill's ABNF Parser
- * $Fenner: abnf-parser/common.h,v 1.8 2004/10/11 17:14:11 fenner Exp $
+ * $Id:$
  */
 
 struct range {

@@ -39,7 +39,7 @@
 #include "common.h"
 
 static const char rcsid[] =
- "$Fenner: abnf-parser/main.c,v 1.25 2006/12/14 05:02:24 fenner Exp $";
+ "$Id:$";
 static const char versionstring[] = PACKAGE_VERSION;
 
 static void printobj_r(object *, int, int);

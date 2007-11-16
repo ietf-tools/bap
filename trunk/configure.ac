@@ -1,4 +1,4 @@
-dnl $Fenner: abnf-parser/configure.ac,v 1.10 2006/12/14 05:05:20 fenner Exp $
+dnl $Id:$
 dnl
 dnl Boy does modern autoconf make it hard to have a small ./configure.
 dnl Sorry that it's so huge for almost no configuration.
