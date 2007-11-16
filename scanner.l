@@ -37,7 +37,7 @@
 #include "y.tab.h"
 
 static const char rcsid[] =
- "$Fenner: abnf-parser/scanner.l,v 1.17 2006/06/16 01:21:03 fenner Exp $";
+ "$Id:$";
 
 int yylineno = 1;
 int yycolumn = 0;

@@ -39,7 +39,7 @@
 #include "common.h"
 
 static const char rcsid[] =
- "$Fenner: abnf-parser/parser.y,v 1.22 2006/12/14 05:02:15 fenner Exp $";
+ "$Id:$";
 
 extern int yylineno, yycolumn;
 

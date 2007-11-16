@@ -4,7 +4,7 @@
 # Sooooo many things to want to fix up.
 # Bill Fenner <fenner@fenron.com> 23 June 2004
 #
-# $Fenner: abnf-parser/abnf.cgi,v 1.5 2005/02/03 05:38:46 fenner Exp $
+# $Id:$
 #
 use CGI qw/:standard/;
 

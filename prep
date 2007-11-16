@@ -7,7 +7,7 @@
 #   and [[(] only get space after if they have [*0-9] before them.
 #  strip comments (after ";")
 #
-# $Fenner$
+# $Id$
 #
 while(<>) {
 	chomp;

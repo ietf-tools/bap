@@ -3,7 +3,7 @@
 # Heuristics to extract ABNF from an I-D or RFC.
 # Bill Fenner <fenner@fenron.com> 26 September 2004
 #
-# $Fenner: abnf-parser/aex,v 1.4 2005/02/03 05:35:14 fenner Exp $
+# $Id:$
 #
 use strict;
 my($inabnf, $indent, $curindent, $spaces, $newrule);
