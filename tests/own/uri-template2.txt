@@ -1,0 +1,219 @@
+; =====================================================================
+; A complete ABNF for URI and IRI Templates
+; =====================================================================
+
+ABNF         = URI-reference / absolute-URI / IRI-reference / absolute-IRI
+
+wsp          =  *(%x20 / %x09)
+sep          =  wsp "," wsp
+
+; =====================================================================
+; Template Operators
+; =====================================================================
+PREFIX         = "<"
+  ; prepend the value of arg to the replacement value of var
+POSTFIX        = ">"
+  ; append the value of arg to the replacement value of var
+CONCAT         = ","
+  ; substitute the concatenation of varname "=" value, join multiple
+  ; vars with arg
+LIST           = "&"
+  ; treat var as a list, join multiple values with arg
+POSITIVEINSERT = "?"
+  ; insert arg if value of var is non-null or non-zero-length list
+NEGATIVEINSERT = "!"
+  ; insert arg if value of var is null or zero-length list
+
+VARDELIM       = "|"
+
+; =====================================================================
+; URI Template Tokens
+; =====================================================================
+arg          = *(reserved / unreserved / pct-encoded)
+varname      = *(ALPHA / DIGIT / "." / "_")
+vardefault   = *(unreserved / pct-encoded)
+var          = varname [ "=" vardefault ]
+vars         = var [*(sep var)]
+varnofefault = varname
+
+identitytoken = var
+operatortoken = ( POSTFIX        arg VARDELIM var )          /
+                ( PREFIX         arg VARDELIM var )          /
+                ( CONCAT         arg VARDELIM vars )         /
+                ( LIST           arg VARDELIM varnodefault ) /
+                ( POSITIVEINSERT arg VARDELIM varnodefault ) /
+                ( NEGATIVEINSERT arg VARDELIM varnodefault )
+
+token = identitytoken / operatortoken
+value = *(unreserved / pct-encoded)
+        ; replacement value for token
+
+; =====================================================================
+; IRI Template Tokens
+; =====================================================================
+iarg          = *(reserved / iunreserved / pct-encoded)
+ivarname      = *(ALPHA / DIGIT / "." / "_" / ucschar)
+ivardefault   = *(iunreserved / pct-encoded)
+ivar          = ivarname [ "=" ivardefault ]
+ivars         = ivar [*(sep ivar)]
+ivarnofefault = ivarname
+
+iidentitytoken = ivar
+ioperatortoken = ( POSTFIX        iarg VARDELIM ivar )          /
+                 ( PREFIX         iarg VARDELIM ivar )          /
+                 ( CONCAT         iarg VARDELIM ivars )         /
+                 ( LIST           iarg VARDELIM ivarnodefault ) /
+                 ( POSITIVEINSERT iarg VARDELIM ivarnodefault ) /
+                 ( NEGATIVEINSERT iarg VARDELIM ivarnodefault )
+
+itoken = iidentitytoken / ioperatortoken
+ivalue = *(iunreserved / pct-encoded)
+         ; replacement value for itoken
+
+
+; =====================================================================
+; Full URI Template. Modified ABNF from RFC 3986
+; =====================================================================
+URI           = scheme ":" hier-part [ "?" query ] [ "#" fragment ]
+
+hier-part     = "//" authority path-abempty
+              / path-absolute
+              / path-rootless
+              / path-empty
+
+URI-reference = URI / relative-ref
+
+absolute-URI  = scheme ":" hier-part [ "?" query ]
+
+relative-ref  = relative-part [ "?" query ] [ "#" fragment ]
+
+relative-part = "//" authority path-abempty
+              / path-absolute
+              / path-noscheme
+              / path-empty
+
+scheme        = (ALPHA *( ALPHA / DIGIT / "+" / "-" / "." )) / token
+
+authority     = [ userinfo "@" ] host [ ":" port ]
+userinfo      = *( unreserved / pct-encoded / sub-delims / ":" / token)
+host          = IP-literal / IPv4address / reg-name / token
+port          = *(DIGIT / token)
+
+IP-literal    = "[" ( IPv6address / IPvFuture  ) "]"
+
+IPvFuture     = "v" 1*HEXDIG "." 1*( unreserved / sub-delims / ":" )
+
+IPv6address   =                            6( h16 ":" ) ls32
+              /                       "::" 5( h16 ":" ) ls32
+              / [               h16 ] "::" 4( h16 ":" ) ls32
+              / [ *1( h16 ":" ) h16 ] "::" 3( h16 ":" ) ls32
+              / [ *2( h16 ":" ) h16 ] "::" 2( h16 ":" ) ls32
+              / [ *3( h16 ":" ) h16 ] "::"    h16 ":"   ls32
+              / [ *4( h16 ":" ) h16 ] "::"              ls32
+              / [ *5( h16 ":" ) h16 ] "::"              h16
+              / [ *6( h16 ":" ) h16 ] "::"
+
+h16           = 1*4HEXDIG
+ls32          = ( h16 ":" h16 ) / IPv4address
+IPv4address   = dec-octet "." dec-octet "." dec-octet "." dec-octet
+
+dec-octet     = DIGIT                 ; 0-9
+              / %x31-39 DIGIT         ; 10-99
+              / "1" 2DIGIT            ; 100-199
+              / "2" %x30-34 DIGIT     ; 200-249
+              / "25" %x30-35          ; 250-255
+
+reg-name      = *( unreserved / pct-encoded / sub-delims / token)
+
+path          = path-abempty    ; begins with "/" or is empty
+              / path-absolute   ; begins with "/" but not "//"
+              / path-noscheme   ; begins with a non-colon segment
+              / path-rootless   ; begins with a segment
+              / path-empty      ; zero characters
+
+path-abempty  = *( "/" segment )
+path-absolute = "/" [ segment-nz *( "/" segment ) ]
+path-noscheme = segment-nz-nc *( "/" segment )
+path-rootless = segment-nz *( "/" segment )
+path-empty    = 0<pchar>
+
+segment       = *(pchar / token)
+segment-nz    = 1*(pchar / token)
+segment-nz-nc = 1*( unreserved / pct-encoded / sub-delims / "@" / token)
+                 ; non-zero-length segment without any colon ":"
+
+pchar         = unreserved / pct-encoded / sub-delims / ":" / "@"
+
+query         = *( pchar / "/" / "?" / token)
+
+fragment      = *( pchar / "/" / "?" / token)
+
+pct-encoded   = "%" HEXDIG HEXDIG
+
+unreserved    = ALPHA / DIGIT / "-" / "." / "_" / "~"
+reserved      = gen-delims / sub-delims
+gen-delims    = ":" / "/" / "?" / "#" / "[" / "]" / "@"
+sub-delims    = "!" / "$" / "&" / DQUOTE / "(" / ")"
+              / "*" / "+" / "," / ";" / "="
+
+; =====================================================================
+; Full IRI Template. Modified ABNF from RFC 3987
+; =====================================================================
+IRI           = scheme ":" ihier-part [ "?" iquery ] [ "#" ifragment ]
+
+ihier-part     = "//" iauthority ipath-abempty
+               / ipath-absolute
+               / ipath-rootless
+               / ipath-empty
+
+IRI-reference  = IRI / irelative-ref
+
+absolute-IRI   = scheme ":" ihier-part [ "?" iquery ]
+
+irelative-ref  = irelative-part [ "?" iquery ] [ "#" ifragment ]
+
+irelative-part = "//" iauthority ipath-abempty
+               / ipath-absolute
+               / ipath-noscheme
+               / ipath-empty
+
+iauthority     = [ iuserinfo "@" ] ihost [ ":" port ]
+iuserinfo      = *( iunreserved / pct-encoded / sub-delims / ":" / itoken)
+ihost          = IP-literal / IPv4address / ireg-name / itoken
+
+ireg-name      = *( iunreserved / pct-encoded / sub-delims / itoken)
+
+ipath          = ipath-abempty   ; begins with "/" or is empty
+               / ipath-absolute  ; begins with "/" but not "//"
+               / ipath-noscheme  ; begins with a non-colon segment
+               / ipath-rootless  ; begins with a segment
+               / ipath-empty     ; zero characters
+
+ipath-abempty  = *( "/" isegment )
+ipath-absolute = "/" [ isegment-nz *( "/" isegment ) ]
+ipath-noscheme = isegment-nz-nc *( "/" isegment )
+ipath-rootless = isegment-nz *( "/" isegment )
+ipath-empty    = 0<ipchar>
+
+isegment       = *(ipchar / itoken)
+isegment-nz    = 1*(ipchar / itoken)
+isegment-nz-nc = 1*( iunreserved / pct-encoded / sub-delims / "@" / itoken)
+               ; non-zero-length segment without any colon ":"
+
+ipchar         = iunreserved / pct-encoded / sub-delims / ":" / "@"
+
+iquery         = *( ipchar / iprivate / "/" / "?" / itoken)
+
+ifragment      = *( ipchar / "/" / "?" / itoken)
+
+iunreserved    = ALPHA / DIGIT / "-" / "." / "_" / "~" / ucschar
+
+ucschar        = %xA0-D7FF / %xF900-FDCF / %xFDF0-FFEF
+               / %x10000-1FFFD / %x20000-2FFFD / %x30000-3FFFD
+               / %x40000-4FFFD / %x50000-5FFFD / %x60000-6FFFD
+               / %x70000-7FFFD / %x80000-8FFFD / %x90000-9FFFD
+               / %xA0000-AFFFD / %xB0000-BFFFD / %xC0000-CFFFD
+               / %xD0000-DFFFD / %xE1000-EFFFD
+
+iprivate       = %xE000-F8FF / %xF0000-FFFFD / %x100000-10FFFD
+

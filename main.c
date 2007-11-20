@@ -1,6 +1,6 @@
 /*
  * Bill's ABNF Parser
- * Copyright 2002-2006 William C. Fenner <fenner@fenron.com>
+ * Copyright 2002-2006 William C. Fenner <fenner@research.att.com>
  *  All rights reserved.
  * 
  * Redistribution and use in source and binary forms, with or without
@@ -39,16 +39,22 @@
 #include "common.h"
 
 static const char rcsid[] =
- "$Id:$";
+  "$Id$";
 static const char versionstring[] = PACKAGE_VERSION;
 
 static void printobj_r(object *, int, int);
 static void canonify(struct rule *);
 static void canonify_r(struct object **);
+static void parse_from(char *filename);
+static void predefine(fn_list *ifile);
+static int summary(void);
 
 #define	MAXRULE		1000	/* XXX */
 
 struct rule *rules = NULL;
+char *input_file; /* of current input file */
+
+char *top_rule_name = "ABNF";
 
 int cflag = 0;		/* include line number comments */
 int c2flag = 0;		/* include comments for printable constants */
@@ -63,12 +69,15 @@ void
 usage(void)
 {
 	fprintf(stderr, "Bill's ABNF Parser version %s\n", versionstring);
-	fprintf(stderr, "usage: bap [-ckntq]\n");
-	fprintf(stderr, " -c : include rule definition line # in comment\n");
-	fprintf(stderr, " -k : add comments for printable characters specified as %%x\n");
-	fprintf(stderr, " -n : don't \"canonify\" result\n");
-	fprintf(stderr, " -t : include type info in result\n");
-	fprintf(stderr, " -q : don't print parsed grammar\n");
+	fprintf(stderr, "usage: bap [-cikntq] [ file ]\n");
+	fprintf(stderr, " parse ABNF grammar from file or stdin\n");
+	fprintf(stderr, " -c      : include rule definition line # in comment\n");
+	fprintf(stderr, " -k      : add comments for printable characters specified as %%x\n");
+	fprintf(stderr, " -n      : don't \"canonify\" result\n");
+	fprintf(stderr, " -i file : read predefined rules from \"file\"\n");
+	fprintf(stderr, " -t      : include type info in result\n");
+	fprintf(stderr, " -q      : don't print parsed grammar\n");
+	fprintf(stderr, " -S name : name rule as production start\n");
 	exit(1);
 }
 
@@ -76,7 +85,10 @@ int
 main(int argc, char **argv)
 {
 	int ch;
+	int rc = 0;
 	struct rule *r;
+	fn_list *pre_input = NULL;
+  
 #ifdef YYDEBUG
 	extern int yydebug;
 
@@ -84,7 +96,7 @@ main(int argc, char **argv)
 #endif
 	hcreate(MAXRULE);
 
-	while ((ch = getopt(argc, argv, "cdkntq")) != -1) {
+	while ((ch = getopt(argc, argv, "cdi:kntqS:")) != -1) {
 		switch (ch) {
 		case 'c':
 			cflag++;
@@ -106,6 +118,14 @@ main(int argc, char **argv)
 			canon = 0;
 			break;
 
+		case 'i': {
+			fn_list *ifile = calloc(sizeof(fn_list), 1);
+			ifile->filename = optarg;
+			ifile->next = pre_input;
+			pre_input = ifile;
+			break;
+		}
+      
 		case 't':
 			tflag++;
 			break;
@@ -118,6 +138,10 @@ main(int argc, char **argv)
 			qflag++;
 			break;
 
+		case 'S': 
+			top_rule_name = optarg;
+			break;
+      
 		default:
 			usage();
 		}
@@ -125,17 +149,23 @@ main(int argc, char **argv)
 	argc -= optind;
 	argv += optind;
 
-	if (argc > 0)
+	if (argc > 1)
 		usage();
 
+	predefine(pre_input);    
+  
 	/* Parse the grammar, perhaps spouting errors. */
-	yyparse();
+	parse_from((argc > 0)? argv[0] : NULL);
+
 	/* If we're not quiet, then output the grammar again. */
 	if (!qflag) {
 		if (canon)
 			canonify(rules);
 		for (r = rules; r; r = r->next) {
-			if (r->rule) {
+			if (r->predefined) {
+				/* do not output */
+			}
+			else if (r->rule) {
 				printf("%s = ", r->name);
 				printobj(r->rule, tflag);
 				if (cflag)
@@ -148,14 +178,19 @@ main(int argc, char **argv)
 				break;
 		}
 		for (r = rules; r; r = r->next) {
-			if (r->used == 0 && r->rule)
+			if (r->used == 0 
+				&& r->predefined == 0 
+				&& r->rule 
+				&& strcmp(r->name, top_rule_name))
 				printf("; %s defined but not used\n", r->name);
 			if (r->next == rules)
 				break;
 		}
 	}
+  
+	rc = summary();
 	hdestroy();
-	exit(0);
+	exit(rc);
 }
 
 void
@@ -325,7 +360,7 @@ printobj_r(object *o, int parenttype, int tflag)
 				printf("{TERMSTR}");
 			printrep(&o->u.e.repetition);
 			if (o->u.e.e.termstr.flags & F_CASESENSITIVE) {
-				unsigned char *p = o->u.e.e.termstr.str;
+				unsigned char *p = (unsigned char*)o->u.e.e.termstr.str;
 				char sep;
 				int allprintable = 1;
 				printf("%%");
@@ -418,3 +453,60 @@ findrule(char *name)
 		return (struct rule *)e->data;
 	}
 }
+
+void 
+parse_from(char *filename) {
+	extern FILE *yyin;
+	FILE *fin = NULL;
+  
+	if (filename != NULL) {
+		fin = fopen (filename, "rt");
+		if (!fin) {
+			fprintf(stderr, "input file not found: %s\n", filename);
+			exit(1);
+		}
+    
+		input_file = filename;
+		yyin = fin;
+	}
+	else {
+		yyin = stdin;
+		input_file = "stdin";
+	}
+  
+	scanreset();
+	yyparse();
+  
+	if (fin) fclose(fin);  
+}
+
+void
+predefine(fn_list *ifile) {
+	struct rule *r;
+	for (;ifile; ifile = ifile->next) {
+		parse_from(ifile->filename);
+	}
+  
+	for (r = rules; r; r = r->next) {
+		/* struct without rule definitions are created when names are used
+		they are != null when the rule was actually defined */
+		if (r->rule) 
+			r->predefined = 1;
+		else
+			r->used = 1;
+
+		if (r->next == rules)
+			break;
+	}
+}
+
+int
+summary(void) {
+	extern int yyerrors;
+	if (yyerrors > 0) {
+		fflush(stdout);
+		fprintf(stderr, "parsing failed: %d errors encountered\n", yyerrors);
+	}
+	return yyerrors;
+}
+

@@ -37,10 +37,11 @@
 #include "y.tab.h"
 
 static const char rcsid[] =
- "$Id:$";
+ "$Id$";
 
 int yylineno = 1;
 int yycolumn = 0;
+int yyerrors = 0;
 extern int permissive;
 int indent = -1;
 
@@ -290,4 +291,11 @@ gotcr(void)
 {
 	yylineno++;
 	yycolumn = 0;
+}
+
+void
+scanreset(void) {
+	yylineno = 0;
+	yycolumn = 0;
+	indent = -1;
 }

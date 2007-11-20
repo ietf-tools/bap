@@ -1,0 +1,3 @@
+; parsing indented rules with different indentation in include file
+
+  test = "test"

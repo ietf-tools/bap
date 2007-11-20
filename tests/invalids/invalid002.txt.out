@@ -1,0 +1,4 @@
+invalids/invalid002.txt(3:8): error: Indented rules are Right Out.
+; test UNDEFINED
+ABNF = test
+parsing failed: 1 errors encountered
