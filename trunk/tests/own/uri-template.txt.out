@@ -1,0 +1,131 @@
+own/uri-template.txt(5:21): error: Illegal character "'" - skipping to end of line
+own/uri-template.txt(10:18): error: Illegal character "'" - skipping to end of line
+own/uri-template.txt(11:0): error: Empty rule
+own/uri-template.txt(12:18): error: Illegal character "'" - skipping to end of line
+own/uri-template.txt(13:0): error: Empty rule
+own/uri-template.txt(14:18): error: Illegal character "'" - skipping to end of line
+own/uri-template.txt(15:0): error: Empty rule
+own/uri-template.txt(17:18): error: Illegal character "'" - skipping to end of line
+own/uri-template.txt(18:0): error: Empty rule
+own/uri-template.txt(19:18): error: Illegal character "'" - skipping to end of line
+own/uri-template.txt(20:0): error: Empty rule
+own/uri-template.txt(21:18): error: Illegal character "'" - skipping to end of line
+own/uri-template.txt(22:0): error: Empty rule
+own/uri-template.txt(24:18): error: Illegal character "'" - skipping to end of line
+own/uri-template.txt(25:0): error: Empty rule
+own/uri-template.txt(32:26): error: Illegal character "'" - skipping to end of line
+own/uri-template.txt(33:0): error: parse error
+
+own/uri-template.txt(54:28): error: Illegal character "'" - skipping to end of line
+own/uri-template.txt(55:0): error: parse error
+
+own/uri-template.txt(135:24): fyi: absolute repeat count of zero means this element may not occur at all
+own/uri-template.txt(193:26): fyi: absolute repeat count of zero means this element may not occur at all
+wsp = *( " " / %x09 )
+sep = wsp
+arg = *( reserved / unreserved / pct-encoded )
+; ALPHA UNDEFINED
+; DIGIT UNDEFINED
+varname = *( ALPHA / DIGIT / "." / "_" )
+vardefault = *( unreserved / pct-encoded )
+; var UNDEFINED
+vars = var *( sep var )
+varnofefault = varname
+identitytoken = var
+; POSTFIX UNDEFINED
+; VARDELIM UNDEFINED
+; PREFIX UNDEFINED
+; CONCAT UNDEFINED
+; LIST UNDEFINED
+; varnodefault UNDEFINED
+; POSITIVEINSERT UNDEFINED
+; NEGATIVEINSERT UNDEFINED
+operatortoken = ( POSTFIX arg VARDELIM var ) / ( PREFIX arg VARDELIM var ) / ( CONCAT arg VARDELIM vars ) / ( LIST arg VARDELIM varnodefault ) / ( POSITIVEINSERT arg VARDELIM varnodefault ) / ( NEGATIVEINSERT arg VARDELIM varnodefault )
+token = identitytoken / operatortoken
+value = *( unreserved / pct-encoded )
+iarg = *( reserved / iunreserved / pct-encoded )
+ivarname = *( ALPHA / DIGIT / "." / "_" / ucschar )
+ivardefault = *( iunreserved / pct-encoded )
+; ivar UNDEFINED
+ivars = ivar *( sep ivar )
+ivarnofefault = ivarname
+iidentitytoken = ivar
+; ivarnodefault UNDEFINED
+ioperatortoken = ( POSTFIX iarg VARDELIM ivar ) / ( PREFIX iarg VARDELIM ivar ) / ( CONCAT iarg VARDELIM ivars ) / ( LIST iarg VARDELIM ivarnodefault ) / ( POSITIVEINSERT iarg VARDELIM ivarnodefault ) / ( NEGATIVEINSERT iarg VARDELIM ivarnodefault )
+itoken = iidentitytoken / ioperatortoken
+ivalue = *( iunreserved / pct-encoded )
+URI = scheme ":" hier-part [ "?" query ] [ "#" fragment ]
+hier-part = ( "//" authority path-abempty ) / path-absolute / path-rootless / path-empty
+URI-reference = URI / relative-ref
+absolute-URI = scheme ":" hier-part [ "?" query ]
+relative-ref = relative-part [ "?" query ] [ "#" fragment ]
+relative-part = ( "//" authority path-abempty ) / path-absolute / path-noscheme / path-empty
+scheme = ( ALPHA *( ALPHA / DIGIT / "+" / "-" / "." ) ) / token
+authority = [ userinfo "@" ] host [ ":" port ]
+userinfo = *( unreserved / pct-encoded / sub-delims / ":" / token )
+host = IP-literal / IPv4address / reg-name / token
+port = *( DIGIT / token )
+IP-literal = "[" ( IPv6address / IPvFuture ) "]"
+; HEXDIG UNDEFINED
+IPvFuture = "v" 1*HEXDIG "." 1*( unreserved / sub-delims / ":" )
+IPv6address = ( 6( h16 ":" ) ls32 ) / ( "::" 5( h16 ":" ) ls32 ) / ( [ h16 ] "::" 4( h16 ":" ) ls32 ) / ( [ [ h16 ":" ] h16 ] "::" 3( h16 ":" ) ls32 ) / ( [ *2( h16 ":" ) h16 ] "::" 2( h16 ":" ) ls32 ) / ( [ *3( h16 ":" ) h16 ] "::" h16 ":" ls32 ) / ( [ *4( h16 ":" ) h16 ] "::" ls32 ) / ( [ *5( h16 ":" ) h16 ] "::" h16 ) / ( [ *6( h16 ":" ) h16 ] "::" )
+h16 = 1*4HEXDIG
+ls32 = ( h16 ":" h16 ) / IPv4address
+IPv4address = dec-octet "." dec-octet "." dec-octet "." dec-octet
+dec-octet = DIGIT / ( %x31-39 DIGIT ) / ( "1" 2DIGIT ) / ( "2" %x30-34 DIGIT ) / ( "25" %x30-35 )
+reg-name = *( unreserved / pct-encoded / sub-delims / token )
+path = path-abempty / path-absolute / path-noscheme / path-rootless / path-empty
+path-abempty = *( "/" segment )
+path-absolute = "/" [ segment-nz *( "/" segment ) ]
+path-noscheme = segment-nz-nc *( "/" segment )
+path-rootless = segment-nz *( "/" segment )
+path-empty = 0<pchar>
+segment = *( pchar / token )
+segment-nz = 1*( pchar / token )
+segment-nz-nc = 1*( unreserved / pct-encoded / sub-delims / "@" / token )
+pchar = unreserved / pct-encoded / sub-delims / ":" / "@"
+query = *( pchar / "/" / "?" / token )
+fragment = *( pchar / "/" / "?" / token )
+pct-encoded = "%" HEXDIG HEXDIG
+unreserved = ALPHA / DIGIT / "-" / "." / "_" / "~"
+reserved = gen-delims / sub-delims
+gen-delims = ":" / "/" / "?" / "#" / "[" / "]" / "@"
+sub-delims = "!" / "$" / "&" / "'" / "(" / ")" / "*" / "+" / "," / ";" / "="
+IRI = scheme ":" ihier-part [ "?" iquery ] [ "#" ifragment ]
+ihier-part = ( "//" iauthority ipath-abempty ) / ipath-absolute / ipath-rootless / ipath-empty
+IRI-reference = IRI / irelative-ref
+absolute-IRI = scheme ":" ihier-part [ "?" iquery ]
+irelative-ref = irelative-part [ "?" iquery ] [ "#" ifragment ]
+irelative-part = ( "//" iauthority ipath-abempty ) / ipath-absolute / ipath-noscheme / ipath-empty
+iauthority = [ iuserinfo "@" ] ihost [ ":" port ]
+iuserinfo = *( iunreserved / pct-encoded / sub-delims / ":" / itoken )
+ihost = IP-literal / IPv4address / ireg-name / itoken
+ireg-name = *( iunreserved / pct-encoded / sub-delims / itoken )
+ipath = ipath-abempty / ipath-absolute / ipath-noscheme / ipath-rootless / ipath-empty
+ipath-abempty = *( "/" isegment )
+ipath-absolute = "/" [ isegment-nz *( "/" isegment ) ]
+ipath-noscheme = isegment-nz-nc *( "/" isegment )
+ipath-rootless = isegment-nz *( "/" isegment )
+ipath-empty = 0<ipchar>
+isegment = *( ipchar / itoken )
+isegment-nz = 1*( ipchar / itoken )
+isegment-nz-nc = 1*( iunreserved / pct-encoded / sub-delims / "@" / itoken )
+ipchar = iunreserved / pct-encoded / sub-delims / ":" / "@"
+iquery = *( ipchar / iprivate / "/" / "?" / itoken )
+ifragment = *( ipchar / "/" / "?" / itoken )
+iunreserved = ALPHA / DIGIT / "-" / "." / "_" / "~" / ucschar
+ucschar = %xA0-D7FF / %xF900-FDCF / %xFDF0-FFEF / %x10000-1FFFD / %x20000-2FFFD / %x30000-3FFFD / %x40000-4FFFD / %x50000-5FFFD / %x60000-6FFFD / %x70000-7FFFD / %x80000-8FFFD / %x90000-9FFFD / %xA0000-AFFFD / %xB0000-BFFFD / %xC0000-CFFFD / %xD0000-DFFFD / %xE1000-EFFFD
+iprivate = %xE000-F8FF / %xF0000-FFFFD / %x100000-10FFFD
+; vardefault defined but not used
+; varnofefault defined but not used
+; value defined but not used
+; ivardefault defined but not used
+; ivarnofefault defined but not used
+; ivalue defined but not used
+; URI-reference defined but not used
+; absolute-URI defined but not used
+; path defined but not used
+; IRI-reference defined but not used
+; absolute-IRI defined but not used
+; ipath defined but not used
+parsing failed: 19 errors encountered

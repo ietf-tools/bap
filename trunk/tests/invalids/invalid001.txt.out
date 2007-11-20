@@ -1,0 +1,2 @@
+invalids/invalid001.txt(2:0): error: Got EOL, expecting '=' or '=/'
+parsing failed: 1 errors encountered

@@ -1,6 +1,6 @@
 /*
  * Bill's ABNF Parser
- * $Id:$
+ * $Id$
  */
 
 struct range {
@@ -15,6 +15,7 @@ struct rule {
 	int line;		/* line of definition */
 	struct object *rule;	/* definition */
 	int used;		/* was it referenced? */
+	int predefined; /* abnf core rule? */
 	struct rule *next;	/* doubly */
 	struct rule *prev;	/* linked list */
 };
@@ -71,6 +72,11 @@ typedef struct object {
 	} u;
 } object;
 
+typedef struct input_file {
+	char *filename;
+	struct input_file *next;
+} fn_list;
+
 #define	F_CASESENSITIVE		1	/* termstr.str is case sensitive */
 
 struct rule *findrule(char *);
@@ -81,3 +87,4 @@ void mywarn(int, const char *, ...);
 #define	MYFYI		3
 
 void printobj(object *, int);
+void scanreset(void);

@@ -1,0 +1,4 @@
+; parsing indented rules with different indentation
+  ABNF = test
+
+    test = "test"

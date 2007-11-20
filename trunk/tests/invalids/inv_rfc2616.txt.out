@@ -1,0 +1,318 @@
+invalids/inv_rfc2616.txt(4:34): error: '/' is the alternation character in ABNF
+invalids/inv_rfc2616.txt(6:49): error: unterminated prose-val
+invalids/inv_rfc2616.txt(7:27): error: No whitespace allowed between repeat and element.
+invalids/inv_rfc2616.txt(7:28): error: Illegal character '-' - skipping to end of line
+invalids/inv_rfc2616.txt(18:41): error: unterminated prose-val
+invalids/inv_rfc2616.txt(19:39): error: Illegal character '>' - skipping to end of line
+invalids/inv_rfc2616.txt(26:44): fyi: suggest DQUOTE or %x22 instead of <">.
+invalids/inv_rfc2616.txt(33:22): fyi: suggest DQUOTE or %x22 instead of <">.
+invalids/inv_rfc2616.txt(33:51): fyi: suggest DQUOTE or %x22 instead of <">.
+invalids/inv_rfc2616.txt(34:38): error: Illegal character '>' - skipping to end of line
+invalids/inv_rfc2616.txt(40:5): error: Illegal character '_' - skipping to end of line
+invalids/inv_rfc2616.txt(41:0): error: Got EOL, expecting '=' or '=/'
+invalids/inv_rfc2616.txt(88:34): error: Concatenation of adjacent elements is not allowed (missing whitespace?)
+invalids/inv_rfc2616.txt(124:55): error: unterminated prose-val
+invalids/inv_rfc2616.txt(126:25): error: Illegal character ',' - skipping to end of line
+invalids/inv_rfc2616.txt(135:24): warning: rule trailer defined on line 89 referred to as Trailer
+invalids/inv_rfc2616.txt(161:41): error: Illegal character '_' - skipping to end of line
+invalids/inv_rfc2616.txt(265:18): error: Illegal character '#' - skipping to end of line
+invalids/inv_rfc2616.txt(275:13): error: Illegal character '#' - skipping to end of line
+invalids/inv_rfc2616.txt(276:0): error: parse error
+
+invalids/inv_rfc2616.txt(278:21): error: Illegal character '#' - skipping to end of line
+invalids/inv_rfc2616.txt(279:0): error: parse error
+
+invalids/inv_rfc2616.txt(282:20): error: Illegal character '#' - skipping to end of line
+invalids/inv_rfc2616.txt(283:0): error: parse error
+
+invalids/inv_rfc2616.txt(286:22): error: Illegal character '#' - skipping to end of line
+invalids/inv_rfc2616.txt(287:0): error: parse error
+
+invalids/inv_rfc2616.txt(291:23): error: Illegal character '#' - skipping to end of line
+invalids/inv_rfc2616.txt(295:40): error: Illegal character '#' - skipping to end of line
+invalids/inv_rfc2616.txt(296:0): error: parse error
+
+invalids/inv_rfc2616.txt(312:29): fyi: suggest DQUOTE or %x22 instead of <">.
+invalids/inv_rfc2616.txt(312:32): error: Illegal character '#' - skipping to end of line
+invalids/inv_rfc2616.txt(313:0): error: parse error
+
+invalids/inv_rfc2616.txt(313:33): error: Illegal character '#' - skipping to end of line
+invalids/inv_rfc2616.txt(324:32): error: Illegal character '#' - skipping to end of line
+invalids/inv_rfc2616.txt(325:0): error: parse error
+
+invalids/inv_rfc2616.txt(327:45): error: Illegal character '#' - skipping to end of line
+invalids/inv_rfc2616.txt(328:0): error: parse error
+
+invalids/inv_rfc2616.txt(329:45): error: Illegal character '#' - skipping to end of line
+invalids/inv_rfc2616.txt(330:0): error: parse error
+
+invalids/inv_rfc2616.txt(356:31): error: Illegal character '#' - skipping to end of line
+invalids/inv_rfc2616.txt(357:0): error: parse error
+
+invalids/inv_rfc2616.txt(367:22): warning: rule Host defined on line 0 referred to as host
+invalids/inv_rfc2616.txt(369:36): error: Illegal character '#' - skipping to end of line
+invalids/inv_rfc2616.txt(370:0): error: parse error
+
+invalids/inv_rfc2616.txt(373:46): error: Illegal character '#' - skipping to end of line
+invalids/inv_rfc2616.txt(374:0): error: parse error
+
+invalids/inv_rfc2616.txt(385:35): error: Illegal character '#' - skipping to end of line
+invalids/inv_rfc2616.txt(386:0): error: parse error
+
+invalids/inv_rfc2616.txt(389:49): error: Illegal character '#' - skipping to end of line
+invalids/inv_rfc2616.txt(390:0): error: parse error
+
+invalids/inv_rfc2616.txt(395:20): error: Illegal character '#' - skipping to end of line
+invalids/inv_rfc2616.txt(396:0): error: parse error
+
+invalids/inv_rfc2616.txt(411:22): error: Illegal character '#' - skipping to end of line
+invalids/inv_rfc2616.txt(414:27): error: Illegal character '#' - skipping to end of line
+invalids/inv_rfc2616.txt(415:0): error: parse error
+
+invalids/inv_rfc2616.txt(416:52): error: Illegal character '#' - skipping to end of line
+invalids/inv_rfc2616.txt(417:0): error: parse error
+
+invalids/inv_rfc2616.txt(418:33): error: Illegal character '#' - skipping to end of line
+invalids/inv_rfc2616.txt(419:0): error: parse error
+
+invalids/inv_rfc2616.txt(422:29): error: Illegal character '#' - skipping to end of line
+invalids/inv_rfc2616.txt(423:0): error: parse error
+
+invalids/inv_rfc2616.txt(424:19): error: Illegal character '#' - skipping to end of line
+invalids/inv_rfc2616.txt(425:0): error: parse error
+
+invalids/inv_rfc2616.txt(428:26): warning: rule Host defined on line 367 referred to as host
+invalids/inv_rfc2616.txt(431:29): error: Illegal character '#' - skipping to end of line
+invalids/inv_rfc2616.txt(432:0): error: parse error
+
+invalids/inv_rfc2616.txt(437:19): warning: rule Host defined on line 367 referred to as host
+invalids/inv_rfc2616.txt(441:16): fyi: suggest DQUOTE or %x22 instead of <">.
+invalids/inv_rfc2616.txt(441:30): fyi: suggest DQUOTE or %x22 instead of <">.
+invalids/inv_rfc2616.txt(443:45): error: Illegal character '#' - skipping to end of line
+invalids/inv_rfc2616.txt(444:0): error: parse error
+
+; line 88 ... trying to concatenate {RULE}chunk-size
+; ... with {GROUP}{RULE}OCTET
+OCTET = <any 8-bit sequence of data>
+CHAR = <any US-ASCII character (octets 0 - 127)>
+UPALPHA = <any US-ASCII uppercase letter "A".."Z">
+LOALPHA = <any US-ASCII lowercase letter "a".."z">
+ALPHA = UPALPHA / LOALPHA
+DIGIT = <any US-ASCII digit "0".."9">
+; octets UNDEFINED
+CR = <US-ASCII CR, carriage return (13)>
+LF = <US-ASCII LF, linefeed (10)>
+SP = <US-ASCII SP, space (32)>
+HT = <US-ASCII HT, horizontal-tab (9)>
+DQUOTE = <US-ASCII double-quote mark (34)>
+CRLF = CR LF
+LWS = [ CRLF ] 1*( SP / HT )
+; but UNDEFINED
+; including UNDEFINED
+TEXT = <any OCTET except CTLs,> but including LWS
+HEX = "A" / "B" / "C" / "D" / "E" / "F" / "a" / "b" / "c" / "d" / "e" / "f" / DIGIT
+token = 1*<any CHAR except CTLs or separators>
+separators = "(" / ")" / "<" / ">" / "@" / "," / ";" / ":" / "\" / <"> / "/" / "[" / "]" / "?" / "=" / "{" / "}" / SP / HT
+comment = "(" *( ctext / quoted-pair / comment ) ")"
+ctext = <any TEXT excluding "(" and ")">
+quoted-string = ( <"> *( qdtext / quoted-pair ) <"> )
+qdtext = <any TEXT except <">
+quoted-pair = "\" CHAR
+HTTP-Version = "HTTP/" 1*DIGIT "." 1*DIGIT
+HTTP-date = rfc1123-date / rfc850-date / asctime-date
+rfc1123-date = wkday "," SP date1 SP time SP "GMT"
+rfc850-date = weekday "," SP date2 SP time SP "GMT"
+asctime-date = wkday SP date3 SP time SP 4DIGIT
+date1 = 2DIGIT SP month SP 4DIGIT
+date2 = 2DIGIT "-" month "-" 2DIGIT
+date3 = month SP ( 2DIGIT / ( SP DIGIT ) )
+time = 2DIGIT ":" 2DIGIT ":" 2DIGIT
+wkday = "Mon" / "Tue" / "Wed" / "Thu" / "Fri" / "Sat" / "Sun"
+weekday = "Monday" / "Tuesday" / "Wednesday" / "Thursday" / "Friday" / "Saturday" / "Sunday"
+month = "Jan" / "Feb" / "Mar" / "Apr" / "May" / "Jun" / "Jul" / "Aug" / "Sep" / "Oct" / "Nov" / "Dec"
+delta-seconds = 1*DIGIT
+charset = token
+content-coding = token
+transfer-coding = "chunked" / transfer-extension
+transfer-extension = token *( ";" parameter )
+parameter = attribute "=" value
+attribute = token
+value = token / quoted-string
+Chunked-Body = *chunk last-chunk trailer CRLF
+; chunk-data UNDEFINED
+chunk = chunk-size [ chunk-extension ] CRLF chunk-data CRLF
+chunk-size = 1*HEX
+last-chunk = 1*"0" [ chunk-extension ] CRLF
+chunk-extension = *( ";" chunk-ext-name [ "=" chunk-ext-val ] )
+chunk-ext-name = token
+chunk-ext-val = token / quoted-string
+trailer = *( entity-header CRLF )
+media-type = type "/" subtype *( ";" parameter )
+type = token
+subtype = token
+product = token [ "/" product-version ]
+product-version = token
+qvalue = ( "0" [ "." *3DIGIT ] ) / ( "1" [ "." *3"0" ] )
+language-tag = primary-tag *( "-" subtag )
+primary-tag = 1*8ALPHA
+subtag = 1*8ALPHA
+entity-tag = [ weak ] opaque-tag
+weak = "W/"
+opaque-tag = quoted-string
+range-unit = bytes-unit / other-range-unit
+bytes-unit = "bytes"
+other-range-unit = token
+HTTP-message = Request / Response
+generic-message = start-line *( message-header CRLF ) CRLF [ message-body ]
+start-line = Request-Line / Status-Line
+message-header = field-name ":" [ field-value ]
+field-name = token
+field-value = *( field-content / LWS )
+; and UNDEFINED
+; consisting UNDEFINED
+; of UNDEFINED
+; either UNDEFINED
+; or UNDEFINED
+; combinations UNDEFINED
+field-content = <the OCTETs making up the field-value> and consisting of either *TEXT or combinations of token
+message-body = entity-body / <entity-body encoded as per Transfer-Encoding>
+; Cache-Control UNDEFINED
+; Connection UNDEFINED
+; Pragma UNDEFINED
+; Transfer-Encoding UNDEFINED
+; Upgrade UNDEFINED
+; Via UNDEFINED
+; Warning UNDEFINED
+general-header = Cache-Control / Connection / Date / Pragma / trailer / Transfer-Encoding / Upgrade / Via / Warning
+Request = Request-Line *( ( general-header / request-header / entity-header ) CRLF ) CRLF [ message-body ]
+Request-Line = Method SP Request-URI SP HTTP-Version CRLF
+Method = "OPTIONS" / "GET" / "HEAD" / "POST" / "PUT" / "DELETE" / "TRACE" / "CONNECT" / extension-method
+extension-method = token
+; absoluteURI UNDEFINED
+; abs UNDEFINED
+Request-URI = "*" / absoluteURI / abs
+; Accept-Charset UNDEFINED
+; Accept-Encoding UNDEFINED
+; Accept-Language UNDEFINED
+; Expect UNDEFINED
+; If-Match UNDEFINED
+; If-None-Match UNDEFINED
+request-header = Accept / Accept-Charset / Accept-Encoding / Accept-Language / Authorization / Expect / From / Host / If-Match / If-Modified-Since / If-None-Match / If-Range / If-Unmodified-Since / Max-Forwards / Proxy-Authorization / Range / Referer / TE / User-Agent
+Response = Status-Line *( ( general-header / response-header / entity-header ) CRLF ) CRLF [ message-body ]
+Status-Line = HTTP-Version SP Status-Code SP Reason-Phrase CRLF
+Status-Code = "100" / "101" / "200" / "201" / "202" / "203" / "204" / "205" / "206" / "300" / "301" / "302" / "303" / "304" / "305" / "307" / "400" / "401" / "402" / "403" / "404" / "405" / "406" / "407" / "408" / "409" / "410" / "411" / "412" / "413" / "414" / "415" / "416" / "417" / "500" / "501" / "502" / "503" / "504" / "505" / extension-code
+extension-code = 3DIGIT
+Reason-Phrase = *<TEXT, excluding CR, LF>
+; Proxy-Authenticate UNDEFINED
+; Vary UNDEFINED
+; WWW-Authenticate UNDEFINED
+response-header = Accept-Ranges / Age / ETag / Location / Proxy-Authenticate / Retry-After / Server / Vary / WWW-Authenticate
+; Content-Encoding UNDEFINED
+; Content-Language UNDEFINED
+entity-header = Allow / Content-Encoding / Content-Language / Content-Length / Content-Location / Content-MD5 / Content-Range / Content-Type / Expires / Last-Modified / extension-header
+extension-header = message-header
+entity-body = *OCTET
+Accept = "Accept:"
+media-range = ( "*/*" / ( type "/*" ) / ( type "/" subtype ) ) *( ";" parameter )
+accept-params = ";q=" qvalue *accept-extension
+accept-extension = ";" token [ "=" ( token / quoted-string ) ]
+codings = ( content-coding / "*" )
+language-range = ( ( 1*8ALPHA *( "-" 1*8ALPHA ) ) / "*" )
+; acceptable-ranges UNDEFINED
+Accept-Ranges = "Accept-Ranges:" acceptable-ranges
+Age = "Age:" age-value
+age-value = delta-seconds
+Allow = "Allow:"
+; credentials UNDEFINED
+Authorization = "Authorization:" credentials
+; cache-response-directive UNDEFINED
+cache-directive = cache-request-directive / cache-response-directive
+cache-request-directive = "no-cache" / "no-store" / ( "max-age=" delta-seconds ) / ( "max-stale" [ "=" delta-seconds ] ) / ( "min-fresh=" delta-seconds ) / "no-transform" / "only-if-cached" / cache-extension
+cache-extension = token [ "=" ( token / quoted-string ) ]
+connection-token = token
+Content-Length = "Content-Length:" 1*DIGIT
+; relativeURI UNDEFINED
+Content-Location = "Content-Location:" ( absoluteURI / relativeURI )
+Content-MD5 = "Content-MD5:" md5-digest
+md5-digest = <base64 of 128 bit MD5 digest as per RFC 1864>
+Content-Range = "Content-Range:" content-range-spec
+content-range-spec = byte-content-range-spec
+byte-content-range-spec = bytes-unit SP byte-range-resp-spec "/" ( instance-length / "*" )
+byte-range-resp-spec = ( first-byte-pos "-" last-byte-pos ) / "*"
+instance-length = 1*DIGIT
+Content-Type = "Content-Type:" media-type
+Date = "Date:" HTTP-date
+ETag = "ETag:" entity-tag
+expectation = "100-continue" / expectation-extension
+expectation-extension = token [ "=" ( token / quoted-string ) *expect-params ]
+expect-params = ";" token [ "=" ( token / quoted-string ) ]
+Expires = "Expires:" HTTP-date
+; mailbox UNDEFINED
+From = "From:" mailbox
+; port UNDEFINED
+Host = "Host:" Host [ ":" port ]
+If-Modified-Since = "If-Modified-Since:" HTTP-date
+If-Range = "If-Range:" ( entity-tag / HTTP-date )
+If-Unmodified-Since = "If-Unmodified-Since:" HTTP-date
+Last-Modified = "Last-Modified:" HTTP-date
+Location = "Location:" absoluteURI
+Max-Forwards = "Max-Forwards:" 1*DIGIT
+pragma-directive = "no-cache" / extension-pragma
+extension-pragma = token [ "=" ( token / quoted-string ) ]
+Proxy-Authorization = "Proxy-Authorization:" credentials
+ranges-specifier = byte-ranges-specifier
+; byte-range-set UNDEFINED
+byte-ranges-specifier = bytes-unit "=" byte-range-set
+byte-range-spec = first-byte-pos "-" [ last-byte-pos ]
+first-byte-pos = 1*DIGIT
+last-byte-pos = 1*DIGIT
+suffix-byte-range-spec = "-" suffix-length
+suffix-length = 1*DIGIT
+Range = "Range:" ranges-specifier
+Referer = "Referer:" ( absoluteURI / relativeURI )
+Retry-After = "Retry-After:" ( HTTP-date / delta-seconds )
+Server = "Server:" 1*( product / comment )
+TE = "TE:"
+t-codings = "trailers" / ( transfer-extension [ accept-params ] )
+User-Agent = "User-Agent:" 1*( product / comment )
+received-protocol = [ protocol-name "/" ] protocol-version
+protocol-name = token
+protocol-version = token
+received-by = ( Host [ ":" port ] ) / pseudonym
+pseudonym = token
+warning-value = warn-code SP warn-agent SP warn-text [ SP warn-date ]
+warn-code = 3DIGIT
+warn-agent = ( Host [ ":" port ] ) / pseudonym
+warn-text = quoted-string
+warn-date = <"> HTTP-date <">
+MIME-Version = "MIME-Version:" 1*DIGIT "." 1*DIGIT
+content-disposition = "Content-Disposition:" disposition-type *( ";" disposition-parm )
+disposition-type = "attachment" / disp-extension-token
+disposition-parm = filename-parm / disp-extension-parm
+filename-parm = "filename=" quoted-string
+disp-extension-token = token
+disp-extension-parm = token "=" ( token / quoted-string )
+; DQUOTE defined but not used
+; separators defined but not used
+; charset defined but not used
+; transfer-coding defined but not used
+; Chunked-Body defined but not used
+; language-tag defined but not used
+; range-unit defined but not used
+; generic-message defined but not used
+; media-range defined but not used
+; codings defined but not used
+; language-range defined but not used
+; cache-directive defined but not used
+; connection-token defined but not used
+; expectation defined but not used
+; pragma-directive defined but not used
+; byte-range-spec defined but not used
+; suffix-byte-range-spec defined but not used
+; t-codings defined but not used
+; received-protocol defined but not used
+; received-by defined but not used
+; warning-value defined but not used
+; MIME-Version defined but not used
+; content-disposition defined but not used
+parsing failed: 61 errors encountered

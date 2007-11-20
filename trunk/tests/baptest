@@ -1,0 +1,88 @@
+#!/bin/sh
+
+BAP=../bap
+OUTDIR=output
+
+usage() {
+  if [ "$1" != "" ]; then echo "ERROR: $1"; fi
+  echo "usage: $0 [ -f ] dir"
+  echo "  run bap against files in dir"
+  echo "  all input files shall end in .txt"
+  echo "  all error references end in .txt.out"
+  echo "  all stdout references end in .txt.hta"
+  echo "  -f    expect bap return code != 0"
+  exit 2
+}
+
+diff_out() {
+  x="$1"
+  f=$( basename $x )
+  ext=$2
+  diff "$x.$ext" "$OUTDIR/$f.$ext" >"$OUTDIR/$ext.diff"
+  if [ "$?" != 0 ]; then
+    echo -e "\nERROR: .$ext output differs!"
+    cat "$OUTDIR/$ext.diff"
+    #exit 1
+  fi
+}
+
+failtest=0
+ok_message="ok."
+
+while getopts f arg; do
+  case $arg in
+    f)
+	failtest=1
+        ok_message="(gave != 0) ok."
+	;;
+    '?')
+	usage
+	;;
+  esac
+done
+shift $(expr $OPTIND - 1)
+
+if [ $# -lt 1 ]; then
+  usage "dir not specified"
+fi
+if [ $# -gt 1 ]; then
+  usage "too many parameters"
+fi
+
+DIR=$1
+
+if [ ! -d "$DIR" ]; then
+ usage "directory $DIR does not exist"
+fi
+
+mkdir -p "$OUTDIR"
+
+for i in "$DIR"/*.txt; do
+  file=$( basename $i )
+  echo -n "test: $file..."
+  rm -f "$OUTDIR/$file"*
+
+  INC=""
+  for incfile in "$i".inc*; do
+    if [ -f $incfile ]; then
+      INC="$INC -i $incfile"
+    fi
+  done
+
+  BAP_OPTS=""
+  if [ -f "$i".rc ]; then
+    source "$i".rc
+  fi
+
+  $BAP $BAP_OPTS $INC "$i" > "$OUTDIR/$file.out" 2>&1
+  rc=$?
+  if [ $failtest != 0 -a "$rc" = 0 ]; then
+    echo "bap unexpectedly succeeded on $i"
+    exit 1
+  elif [ $failtest = 0 -a "$rc" != 0 ]; then
+    echo "bap failed on $i"
+    exit $rc
+  fi
+  diff_out "$i" out
+  echo $ok_message
+done

@@ -39,12 +39,13 @@
 #include "common.h"
 
 static const char rcsid[] =
- "$Id:$";
+ "$Id$";
 
-extern int yylineno, yycolumn;
+extern int yylineno, yycolumn, yyerrors;
 
 int defline;
 extern struct rule *rules;
+extern char *input_file;
 
 #if defined(YYERROR_VERBOSE) && defined(YYBISON)
 #define MYERROR_VERBOSE
@@ -108,7 +109,7 @@ rule:	recover RULENAME { defline = yylineno; } definedas rulerest {
 
 		if ($4 == 0 || r->name == NULL || r->rule == NULL) {	/* = */
 			if ($4) {
-				mywarn(MYERROR, "Rule %s does not yet exist; treating =/ as =", $2);
+				mywarn(MYERROR, "Rule %s does not yet exist; treating /= as =", $2);
 			}
 			if (r->name && strcmp(r->name, $2))
 				if (r->rule)
@@ -118,11 +119,12 @@ rule:	recover RULENAME { defline = yylineno; } definedas rulerest {
 					mywarn(MYWARNING, "rule %s previously referred to as %s",
 						$2, r->name);
 			if (r->rule)
-				mywarn(MYERROR, "Rule %s was already defined on line %d", $2,
-					r->line);
+				mywarn(MYERROR, "Rule %s was already defined on line %d of %s", $2,
+               r->line, (r->file? r->file : "stdin"));
 			else {
 				r->name = $2;
 				r->line = defline;
+        r->file = input_file;
 				r->rule = $5;
 				if (r->next != rules) {
 					/* unlink r from where it is and move to the end */
@@ -319,11 +321,11 @@ mywarn(int level, const char *fmt, ...)
 	va_list ap;
 
 	/* file name */
-	fprintf(stderr, "%d:%d: ", yylineno, yycolumn);
+	fprintf(stderr, "%s(%d:%d): ", input_file, yylineno, yycolumn);
 	switch (level) {
 		case MYFYI: fprintf(stderr, "fyi: "); break;
 		case MYWARNING: fprintf(stderr, "warning: "); break;
-		case MYERROR: /* fall through */
+		case MYERROR: ++yyerrors; /* fall through */
 		default: fprintf(stderr, "error: "); break;
 	}
 	va_start(ap, fmt);
