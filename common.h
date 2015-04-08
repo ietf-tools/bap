@@ -34,6 +34,8 @@ struct rule {
  * - Terminal character range
  *   - repetition
  *   - concatenation
+ * - List
+ *   (list construct from RFC2616, Section 2.1)
  */
 #define	T_ALTERNATION	1
 #define	T_RULE		2
@@ -52,6 +54,7 @@ typedef struct object {
 		} alternation;
 		struct {
 			struct range repetition;
+      int   islist; /* jre */
 			union {
 			    struct {
 				    char *name;	/* for forward ref. */

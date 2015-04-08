@@ -168,6 +168,24 @@ mycrlf	(\n\r|\r\n|\r|\n)
 			}
 			return REPEAT;
 			}
+{digit}*#{digit}*	{
+			char *ep;
+
+			yycolumn += strlen(yytext);
+			yylval.range.lo = strtoul(yytext, &ep, 10);
+			if (*ep != '#') {
+			    mywarn(MYERROR, "internal scanner error 1");
+			    yylval.range.hi = -1;
+			} else {
+			    yylval.range.hi = strtoul(ep + 1, &ep, 10);
+			    if (*ep) {
+				mywarn(MYERROR, "internal scanner error 2");
+				yylval.range.hi = -1;
+			    } else if (yylval.range.hi == 0)
+				yylval.range.hi = -1;
+			}
+			return LIST;
+			}
 {digit}+		{
 			char *ep;
 

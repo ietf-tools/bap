@@ -71,12 +71,12 @@ int yylex(void);
 }
 
 %token <string> CHARVAL PROSEVAL BINVAL DECVAL HEXVAL RULENAME
-%token <range> BINVALRANGE DECVALRANGE HEXVALRANGE REPEAT
+%token <range> BINVALRANGE DECVALRANGE HEXVALRANGE REPEAT LIST
 %token CWSP EQSLASH CRLF
 
 %type <string> numval
 %type <range> numvalrange
-%type <object> element group option repetition elements
+%type <object> element group option repetition list elements
 %type <object> rulerest
 %type <retval> definedas
 
@@ -171,7 +171,19 @@ rulerest: elements starcwsp CRLF	{ $$ = $1; }
 
 elements:
 	  repetition
+  | list
 	| elements cwsp repetition			{
+		/* concatenation */
+		object *o = $1;
+
+		$$ = $1;
+		if (o->type == T_ALTERNATION)
+			o = o->u.alternation.right;
+		while (o->next)	/* n**2, do this better */
+			o = o->next;
+		o->next = $3;
+		}
+	| elements cwsp list			{
 		/* concatenation */
 		object *o = $1;
 
@@ -188,6 +200,20 @@ elements:
 		$$->u.alternation.right = $5;
 		}
 	| elements starcwsp '|' starcwsp repetition	{
+		if (!pipewarn) {
+			mywarn(MYERROR, "'/' is the alternation character in ABNF");
+			pipewarn = 1;
+		}
+		$$ = newobj(T_ALTERNATION);
+		$$->u.alternation.left = $1;
+		$$->u.alternation.right = $5;
+		}
+	| elements starcwsp '/' starcwsp list	{
+		$$ = newobj(T_ALTERNATION);
+		$$->u.alternation.left = $1;
+		$$->u.alternation.right = $5;
+		}
+	| elements starcwsp '|' starcwsp list	{
 		if (!pipewarn) {
 			mywarn(MYERROR, "'/' is the alternation character in ABNF");
 			pipewarn = 1;
@@ -236,6 +262,28 @@ repetition:
 				}
 	| REPEAT cwsp		{
 				mywarn(MYERROR, "No whitespace allowed between repeat and element.");
+				YYERROR;
+				}
+	;
+
+list:
+	LIST element	{
+				$$ = $2;
+				if ($$->u.e.repetition.lo != 0)
+					$$->u.e.repetition.lo = $1.lo;
+				$$->u.e.repetition.hi = $1.hi;
+				if ($1.hi < $1.lo && $1.hi != -1)
+					mywarn(MYERROR, "List range swapped, should be min*max");
+				if ($1.hi == 0)
+					mywarn(MYFYI, "absolute list count of zero means this element may not occur at all");
+        if ($1.lo != 0 && $1.lo != 1 && $1.lo != -1)
+					mywarn(MYERROR, "List range min must be 0 or 1");
+        if ($1.hi != -1)
+					mywarn(MYERROR, "List range max must be infinity");
+        $$->u.e.islist = 1;
+				}
+	| LIST cwsp		{
+				mywarn(MYERROR, "No whitespace allowed between list and element.");
 				YYERROR;
 				}
 	;
