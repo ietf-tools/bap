@@ -41,7 +41,7 @@
 static const char rcsid[] =
  "$Id$";
 
-extern int yylineno, yycolumn, yyerrors;
+extern int mylineno, mycolumn, myerrors;
 
 int defline;
 extern struct rule *rules;
@@ -53,7 +53,7 @@ extern char *input_file;
 #ifdef MYERROR_VERBOSE
 /* HACK-O-ROONIE for yyerror verbosity */
 int *yystatep = NULL;
-int *yychar1p = NULL;
+int *yynp = NULL;
 #endif
 
 int pipewarn = 0;
@@ -84,7 +84,7 @@ int yylex(void);
 
 begin:	{
 #ifdef MYERROR_VERBOSE
-	/* HACK-O-RAMA */ yystatep = &yystate; yychar1p = &yychar1;
+	/* HACK-O-RAMA */ yystatep = &yystate; yynp = &yyn;
 #endif
 		} rulelist
 	;
@@ -102,7 +102,7 @@ recover:
 	| error CRLF
 	;
 
-rule:	recover RULENAME { defline = yylineno; } definedas rulerest {
+rule:	recover RULENAME { defline = mylineno; } definedas rulerest {
 		struct rule *r;
 
 		r = findrule($2);
@@ -225,7 +225,7 @@ elements:
 	| elements repetition {
 		object *o = $1;
 		mywarn(MYERROR, "Concatenation of adjacent elements is not allowed (missing whitespace?)");
-		printf("; line %d ... trying to concatenate ", yylineno);
+		printf("; line %d ... trying to concatenate ", mylineno);
 		if (o->type == T_ALTERNATION)
 			o = o->u.alternation.right;
 		while (o->next)	/* n**2, do this better */
@@ -369,11 +369,11 @@ mywarn(int level, const char *fmt, ...)
 	va_list ap;
 
 	/* file name */
-	fprintf(stderr, "%s(%d:%d): ", input_file, yylineno, yycolumn);
+	fprintf(stderr, "%s(%d:%d): ", input_file, mylineno, mycolumn);
 	switch (level) {
 		case MYFYI: fprintf(stderr, "fyi: "); break;
 		case MYWARNING: fprintf(stderr, "warning: "); break;
-		case MYERROR: ++yyerrors; /* fall through */
+		case MYERROR: ++myerrors; /* fall through */
 		default: fprintf(stderr, "error: "); break;
 	}
 	va_start(ap, fmt);
@@ -387,7 +387,7 @@ yyerror(char *s)
 #ifdef MYERROR_VERBOSE
 	mywarn(MYERROR, "state %d, token %s: %s", 
 		*yystatep,
-		(yychar1p && (*yychar1p >= 0 && *yychar1p <= (sizeof(yytname)/sizeof(yytname[0])))) ? yytname[*yychar1p] : "?",
+		(yynp && (*yynp >= 0 && *yynp <= (sizeof(yytname)/sizeof(yytname[0])))) ? yytname[*yynp] : "?",
 		s);
 #else
 	mywarn(MYERROR, "%s\n", s);
