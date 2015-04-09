@@ -7,6 +7,7 @@ HEADERS= config.h common.h
 
 CFLAGS=	@CFLAGS@ @DEFS@ -DYYDEBUG
 YACC=	@YACC@ -d -v
+LEX=	@LEX@
 CC=	@CC@
 
 bap:	${OBJS}

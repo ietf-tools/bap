@@ -3,7 +3,7 @@ dnl
 dnl Boy does modern autoconf make it hard to have a small ./configure.
 dnl Sorry that it's so huge for almost no configuration.
 
-AC_INIT(bap, 1.2)
+AC_INIT(bap, 1.3)
 
 AC_PROG_CC
 AC_PROG_YACC
@@ -19,12 +19,14 @@ fi
 dnl The bap -d argument only works with bison, so enable it
 dnl  if we're using bison.
 dnl
-dnl Unfortunately, the bison internals that my YYERROR_VERBOSE
-dnl code tweaks changed in bison 2.1, and I haven't taken the
-dnl time to track it down, so skip this test for now.
-dnl if test "$ac_cv_prog_YACC" = "bison -y"; then
-dnl	AC_DEFINE(YYERROR_VERBOSE, 1, [define if we're using bison])
-dnl fi
+if test "$ac_cv_prog_YACC" = "bison -y"; then
+	AC_DEFINE(YYERROR_VERBOSE, 1, [define if we're using bison])
+fi
+
+AC_PROG_LEX
+if test "$ac_cv_prog_LEX" = ":"; then
+        AC_ERROR([please install flex])
+fi
 
 AC_REPLACE_FUNCS(hcreate)
 
