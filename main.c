@@ -502,11 +502,11 @@ predefine(fn_list *ifile) {
 
 int
 summary(void) {
-	extern int yyerrors;
-	if (yyerrors > 0) {
+	extern int myerrors;
+	if (myerrors > 0) {
 		fflush(stdout);
-		fprintf(stderr, "parsing failed: %d errors encountered\n", yyerrors);
+		fprintf(stderr, "parsing failed: %d errors encountered\n", myerrors);
 	}
-	return yyerrors;
+	return myerrors;
 }
 

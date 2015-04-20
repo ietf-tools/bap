@@ -39,9 +39,9 @@
 static const char rcsid[] =
  "$Id$";
 
-int yylineno = 1;
-int yycolumn = 0;
-int yyerrors = 0;
+int mylineno = 1;
+int mycolumn = 0;
+int myerrors = 0;
 extern int permissive;
 int indent = -1;
 
@@ -82,7 +82,7 @@ mycrlf	(\n\r|\r\n|\r|\n)
 				return CRLF; }
 \"{charval}["\r\n]	{
 			char *p;
-			yycolumn += strlen(yytext);
+			mycolumn += strlen(yytext);
 			yylval.string = strdup(yytext + 1);
 			p = &yylval.string[strlen(yylval.string) - 1];
 			if (*p != '"') {
@@ -96,7 +96,7 @@ mycrlf	(\n\r|\r\n|\r|\n)
 			}
 \<{proseval}[>\r\n]	{
 			char *p;
-			yycolumn += strlen(yytext);
+			mycolumn += strlen(yytext);
 			yylval.string = strdup(yytext + 1);
 			p = &yylval.string[strlen(yylval.string) - 1];
 			if (*p != '>') {
@@ -109,42 +109,42 @@ mycrlf	(\n\r|\r\n|\r|\n)
 {rulename}		{
 			/* record the indentation of the first rule name. */
 			if (indent == -1)
-				indent = yycolumn;
-			yycolumn += strlen(yytext);
+				indent = mycolumn;
+			mycolumn += strlen(yytext);
 			yylval.string = strdup(yytext);
 			return RULENAME;
 			}
 %[Bb]{bit}+(-|\.\.){bit}+		{
-			yycolumn += strlen(yytext);
+			mycolumn += strlen(yytext);
 			scanrange(yytext + 2, 2, &yylval.range);
 			return BINVALRANGE;
 			}
 %[Bb]{bit}+(\.{bit}+)*	{
-			yycolumn += strlen(yytext);
+			mycolumn += strlen(yytext);
 			yylval.string = scanstr(yytext + 2, 2);
 			return BINVAL;
 			}
 %[Bb].			{ mywarn(MYERROR, "bad bit value");
 			  badchar = yytext[2]; BEGIN(SKIP); }
 %[Dd]{digit}+(-|\.\.){digit}+	{
-			yycolumn += strlen(yytext);
+			mycolumn += strlen(yytext);
 			scanrange(yytext + 2, 10, &yylval.range);
 			return DECVALRANGE;
 			}
 %[Dd]{digit}+(\.{digit}+)*	{
-			yycolumn += strlen(yytext);
+			mycolumn += strlen(yytext);
 			yylval.string = scanstr(yytext + 2, 10);
 			return DECVAL;
 			}
 %[Dd].			{ mywarn(MYERROR, "bad decimal value");
 			  badchar = yytext[2]; BEGIN(SKIP); }
 %[Xx]{hexdig}+(-|\.\.){hexdig}+	{
-			yycolumn += strlen(yytext);
+			mycolumn += strlen(yytext);
 			scanrange(yytext + 2, 16, &yylval.range);
 			return HEXVALRANGE;
 			}
 %[Xx]{hexdig}+(\.{hexdig}+)*	{
-			yycolumn += strlen(yytext);
+			mycolumn += strlen(yytext);
 			yylval.string = scanstr(yytext + 2, 16);
 			return HEXVAL;
 			}
@@ -153,7 +153,7 @@ mycrlf	(\n\r|\r\n|\r|\n)
 {digit}*\*{digit}*	{
 			char *ep;
 
-			yycolumn += strlen(yytext);
+			mycolumn += strlen(yytext);
 			yylval.range.lo = strtoul(yytext, &ep, 10);
 			if (*ep != '*') {
 			    mywarn(MYERROR, "internal scanner error 1");
@@ -171,7 +171,7 @@ mycrlf	(\n\r|\r\n|\r|\n)
 {digit}+		{
 			char *ep;
 
-			yycolumn += strlen(yytext);
+			mycolumn += strlen(yytext);
 			yylval.range.hi = yylval.range.lo = strtoul(yytext, &ep, 10);
 			if (*ep) {
 			    mywarn(MYERROR, "internal scanner error 3");
@@ -179,7 +179,7 @@ mycrlf	(\n\r|\r\n|\r|\n)
 			}
 			return REPEAT;
 			}
-=\/			{ yycolumn += 2; return EQSLASH; }
+=\/			{ mycolumn += 2; return EQSLASH; }
 ({wsp}+|(;[^\r\n]*)|{mycrlf}{wsp}+)+	{ char *p = yytext;
 				while (*p) {
 					/* TO DO:
@@ -201,7 +201,7 @@ mycrlf	(\n\r|\r\n|\r|\n)
 						continue;
 					}
 					p++;
-					yycolumn++;
+					mycolumn++;
 				}
 				/* If we don't know the indent yet, then just
 				   ignore leading whitespace. */
@@ -210,10 +210,10 @@ mycrlf	(\n\r|\r\n|\r|\n)
 				/* If there is more whitespace than
 				   the initial indent, then tell the parser
 				   about the leading whitespace. */
-				if (yycolumn > indent)
+				if (mycolumn > indent)
 					return CWSP;
-				if (yycolumn < indent) {
-					indent = yycolumn;
+				if (mycolumn < indent) {
+					indent = mycolumn;
 					mywarn(MYERROR, "adjusting indentation");
 				}
 				/* Since we didn't have more whitespace than
@@ -221,14 +221,14 @@ mycrlf	(\n\r|\r\n|\r|\n)
 				   a CR. */
 				return CRLF; }
 {mycrlf}		{ gotcr(); return CRLF; }
-[][()=/]		{ yycolumn++; return yytext[0]; }
-\|			{ yycolumn++;
+[][()=/]		{ mycolumn++; return yytext[0]; }
+\|			{ mycolumn++;
 			  if (!permissive) {
 				badchar = yytext[0];
 				BEGIN(SKIP);
 			  }
 			  return yytext[0]; }
-.			{ yycolumn++; badchar = yytext[0]; BEGIN(SKIP); }
+.			{ mycolumn++; badchar = yytext[0]; BEGIN(SKIP); }
 %%
 
 static void
@@ -289,13 +289,13 @@ scanstr(char *p, int base)
 static void
 gotcr(void)
 {
-	yylineno++;
-	yycolumn = 0;
+	mylineno++;
+	mycolumn = 0;
 }
 
 void
 scanreset(void) {
-	yylineno = 0;
-	yycolumn = 0;
+	mylineno = 0;
+	mycolumn = 0;
 	indent = -1;
 }
