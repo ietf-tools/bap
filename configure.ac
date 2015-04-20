@@ -32,4 +32,6 @@ AC_REPLACE_FUNCS(hcreate)
 
 AC_CONFIG_HEADERS(config.h)
 
-AC_OUTPUT(Makefile)
+AC_CONFIG_FILES([Makefile])
+AC_CONFIG_FILES([tests/baptest], [chmod +x tests/baptest])
+AC_OUTPUT
