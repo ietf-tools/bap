@@ -39,7 +39,9 @@
 static const char rcsid[] =
  "$Id$";
 
+/* (PHK) Doesn't compile with this in (dup definition)
 int yylineno = 1;
+*/
 int yycolumn = 0;
 int yyerrors = 0;
 extern int permissive;
@@ -49,6 +51,7 @@ char badchar;
 
 static void scanrange(char *, int, struct range *);
 static char *scanstr(char *, int);
+static char *get_charval(char *);
 static void gotcr(void);
 
 %}
@@ -80,19 +83,23 @@ mycrlf	(\n\r|\r\n|\r|\n)
 				gotcr();
 				BEGIN(INITIAL);
 				return CRLF; }
-\"{charval}["\r\n]	{
+\"{charval}["\r\n]	{	
 			char *p;
 			yycolumn += strlen(yytext);
-			yylval.string = strdup(yytext + 1);
-			p = &yylval.string[strlen(yylval.string) - 1];
-			if (*p != '"') {
-				mywarn(MYERROR, "unterminated char-val");
-				unput(*p);	/* put the cr or lf back */
-			}
-			*p = '\0';
-			if (*yylval.string == '\0')
-				mywarn(MYWARNING, "zero-length char-val");
+			yylval.string = get_charval(yytext);
 			return CHARVAL;
+			}
+%[Ii]\"{charval}["\r\n]	{	
+			char *p;
+			yycolumn += strlen(yytext);
+			yylval.string = get_charval(yytext+2);
+			return CHARVAL_I;
+			}
+%[Ss]\"{charval}["\r\n]	{	
+			char *p;
+			yycolumn += strlen(yytext);
+			yylval.string = get_charval(yytext+2);
+			return CHARVAL_S;
 			}
 \<{proseval}[>\r\n]	{
 			char *p;
@@ -284,6 +291,23 @@ scanstr(char *p, int base)
 		mywarn(MYERROR, "internal scanner error 6");
 	*b++ = '\0';
 	return strdup(buf);
+}
+
+static char *
+get_charval(char *qp)
+{
+	char *p;
+	char *r;
+	r = strdup(qp + 1);
+	p = &r[strlen(r) - 1];
+	if (*p != '"') {
+		mywarn(MYERROR, "unterminated char-val");
+		unput(*p);	/* put the cr or lf back */
+	}
+	*p = '\0';
+	if (*r == '\0')
+		mywarn(MYWARNING, "zero-length char-val");
+	return r;
 }
 
 static void

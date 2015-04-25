@@ -1,0 +1,41 @@
+rfc7405/sensitivity-o-~rfc7405.txt(3:29): warning: %i"..." requires use of RFC7405
+rfc7405/sensitivity-o-~rfc7405.txt(4:25): warning: %s"..." requires use of RFC7405
+rfc7405/sensitivity-o-~rfc7405.txt(5:31): warning: %s"..." requires use of RFC7405
+rfc7405/sensitivity-o-~rfc7405.txt(13:61): warning: %i"..." requires use of RFC7405
+rfc7405/sensitivity-o-~rfc7405.txt(13:68): warning: %i"..." requires use of RFC7405
+rfc7405/sensitivity-o-~rfc7405.txt(13:75): warning: %s"..." requires use of RFC7405
+rfc7405/sensitivity-o-~rfc7405.txt(13:82): warning: %s"..." requires use of RFC7405
+rfc7405/sensitivity-o-~rfc7405.txt(16:15): warning: %i"..." requires use of RFC7405
+rfc7405/sensitivity-o-~rfc7405.txt(16:32): warning: %i"..." requires use of RFC7405
+default = "default"
+default1 = "default1"
+insensitive = %i"insensitive"
+sensitive = %s"sensitive"
+sensitive-nonalpha = %s"1-2!3~"
+hex = %x41.42.43
+dec = %d68.69.70
+bin = %b110000.110001.110010
+two-str = "1st2nd"
+two-hex = %x41.42.43
+two-bin = %b110000.110001.110010
+str-hex = "default" %x41
+mixed1 = "dflt2012 !ABCD" %s"defgAB"
+dspace = %d32
+mixed3 = "!AB"
+mixed4 = %i"AB" %b1000011 %i"DE"
+; default defined but not used
+; default1 defined but not used
+; insensitive defined but not used
+; sensitive defined but not used
+; sensitive-nonalpha defined but not used
+; hex defined but not used
+; dec defined but not used
+; bin defined but not used
+; two-str defined but not used
+; two-hex defined but not used
+; two-bin defined but not used
+; str-hex defined but not used
+; mixed1 defined but not used
+; dspace defined but not used
+; mixed3 defined but not used
+; mixed4 defined but not used
