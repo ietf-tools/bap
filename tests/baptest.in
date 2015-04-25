@@ -59,7 +59,7 @@ mkdir -p "$OUTDIR"
 
 for i in "$DIR"/*.txt; do
   file=$( basename $i )
-  echo "test: $file...\c"
+  echo @ECHO_N@ "test: $file...@ECHO_C@"
   rm -f "$OUTDIR/$file"*
 
   INC=""
