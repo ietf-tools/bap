@@ -115,17 +115,18 @@ rule:	recover RULENAME { defline = mylineno; } definedas rulerest {
 			if ($4) {
 				mywarn(MYERROR, "Rule %s does not yet exist; treating /= as =", $2);
 			}
-			if (r->name && strcmp(r->name, $2))
+			if (r->name && strcmp(r->name, $2)) {
 				if (r->rule)
 					mywarn(MYERROR, "Rule %s previously defined as %s on line %d",
 						$2, r->name, r->line);
 				else
 					mywarn(MYWARNING, "rule %s previously referred to as %s",
 						$2, r->name);
-			if (r->rule)
+			}
+			if (r->rule) {
 				mywarn(MYERROR, "Rule %s was already defined on line %d of %s", $2,
                r->line, (r->file? r->file : "stdin"));
-			else {
+			} else {
 				r->name = $2;
 				r->line = defline;
         r->file = input_file;
