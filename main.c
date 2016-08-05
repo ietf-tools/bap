@@ -56,12 +56,14 @@ char *input_file; /* of current input file */
 
 char *top_rule_name = "ABNF";
 
-int cflag = 0;		/* include line number comments */
-int c2flag = 0;		/* include comments for printable constants */
-int tflag = 0;		/* print type info */
-int permissive = 1;	/* Be permissive (e.g. accept '|') */
-int qflag = 0;		/* quiet */
-int canon = 1;		/* canonify */
+int cflag = 0;		/* (-c) include line number comments */
+int c2flag = 0;		/* (-k) include comments for printable constants */
+int tflag = 0;		/* (-t) print type info */
+int permissive = 1;	/* (-p) Be permissive (e.g. accept '|') */
+int qflag = 0;		/* (-q) quiet */
+int canon = 1;		/* (-n missing) canonify */
+int opt_rfc7405 = 0;	/* (-o ~RFC7405) */
+
 
 int yyparse(void);
 
@@ -78,7 +80,40 @@ usage(void)
 	fprintf(stderr, " -t      : include type info in result\n");
 	fprintf(stderr, " -q      : don't print parsed grammar\n");
 	fprintf(stderr, " -S name : name rule as production start\n");
+	fprintf(stderr, " -o opt  : invoke named option\n");
 	exit(1);
+}
+
+/* Option table for processing -o */
+typedef struct {
+	const char *name; 
+	int *valuep; 
+	int set_to; 
+	const char *description;
+} t_option;
+
+t_option OPTIONS[] = {
+	{"RFC7405",  &opt_rfc7405, 1, "Allow %s and %i prefixes on strings. (default)"},
+	{"~RFC7405", &opt_rfc7405, 0, "Disallow %s and %i prefixes on strings."},
+	{NULL, NULL, 0, NULL}
+};
+
+void
+enable_option(char* optname)
+{
+	t_option *opt;
+	for (opt = OPTIONS; opt->name; opt++) {
+		if (strcmp(optname, opt->name) == 0) break;
+	}
+	if (opt->name) {
+		*opt->valuep = opt->set_to;
+	} else {
+		fprintf(stderr, "Options:\n");
+		for (opt = OPTIONS; opt->name; opt++) {
+			fprintf(stderr, " %s\t%s\n", opt->name, opt->description);
+		}
+		exit(1);
+	}
 }
 
 int
@@ -96,7 +131,7 @@ main(int argc, char **argv)
 #endif
 	hcreate(MAXRULE);
 
-	while ((ch = getopt(argc, argv, "cdi:kntqS:")) != -1) {
+	while ((ch = getopt(argc, argv, "cdi:kntqS:o:")) != -1) {
 		switch (ch) {
 		case 'c':
 			cflag++;
@@ -140,6 +175,10 @@ main(int argc, char **argv)
 
 		case 'S': 
 			top_rule_name = optarg;
+			break;
+      
+		case 'o': 
+			enable_option(optarg);
 			break;
       
 		default:
@@ -206,6 +245,83 @@ canonify(struct rule *rules)
 	}
 }
 
+void
+canonify_str(struct object *o)
+{
+	t_tsfmts fmt;
+	t_tsfmts valid;
+
+	if (o->type != T_TERMSTR) return; /* precondition */
+
+	fmt = o->u.e.e.termstr.fmt;
+	valid = o->u.e.e.termstr.valid_fmts;
+
+	/* merge adjacent strings that have identical formats */
+	if (o->u.e.repetition.lo == 1 && o->u.e.repetition.hi == 1) {
+		while (	   o->next && o->next->type == T_TERMSTR
+			&& o->next->u.e.repetition.lo == 1 && o->next->u.e.repetition.hi == 1 
+			&& (fmt == o->next->u.e.e.termstr.fmt) ) {
+				int len = strlen(o->u.e.e.termstr.str) + strlen(o->next->u.e.e.termstr.str);
+				char *p = malloc(len + 1);
+				strcpy(p, o->u.e.e.termstr.str);
+				strcat(p, o->next->u.e.e.termstr.str);
+				free(o->u.e.e.termstr.str);
+				o->u.e.e.termstr.str = p;
+				/* merging strings may reduce the validity */
+				valid &= o->next->u.e.e.termstr.valid_fmts;
+				/* XXX leak o->next */
+				o->next = o->next->next;
+		}
+	}
+	/* we can also merge strings using different formats, by promoting one that has
+	 * content valid in the other format. We want to do that only to go to a preferred format.
+	 * But we want to first ensure that the neighbor has had a chance to merge with its
+	 * further neighbors, since that might cause it to be incompatible for merging here. 
+	 */
+	if (   o->next && o->next->type == T_TERMSTR
+	    && (o->next->u.e.repetition.lo == 1 && o->next->u.e.repetition.hi == 1)) {
+		t_tsfmts next_fmt;
+		t_tsfmts next_valid;
+		t_tsfmts preferred;
+
+		canonify_str(o->next); 
+		next_fmt = o->next->u.e.e.termstr.fmt;
+		next_valid = o->next->u.e.e.termstr.valid_fmts;
+		preferred = fmt < next_fmt ? fmt : next_fmt;
+		if ((preferred & valid) && (preferred & next_valid)) {
+			/* both strings are valid in the preferred format */
+			int len = strlen(o->u.e.e.termstr.str) + strlen(o->next->u.e.e.termstr.str);
+			char *p = malloc(len + 1);
+			strcpy(p, o->u.e.e.termstr.str);
+			strcat(p, o->next->u.e.e.termstr.str);
+			free(o->u.e.e.termstr.str);
+			o->u.e.e.termstr.str = p;
+			fmt = preferred;
+			/* merging strings can reduce the validity */
+			valid &= next_valid;
+			/* XXX leak o->next */
+			o->next = o->next->next;
+		}
+	}
+ 
+	/* see if can promote this to a more preferred type */
+	if (fmt & F_TSFMT_X) { /* policy to only do this for hex strings */
+		t_tsfmts pref;
+		t_tsfmts prefs = M_TSFMT_ALL;
+		if (!opt_rfc7405) prefs &= ~ M_TSFMT_RFC7405;
+		for (pref = F_TSFMT_PREFERRED(prefs); prefs; pref <<= 1) { 
+			if ((valid & pref) && (prefs & pref)) {
+				fmt = pref;
+				break;
+			}
+			prefs &= ~pref;
+		}
+	}
+	/* set formats */
+	o->u.e.e.termstr.fmt = fmt;
+	o->u.e.e.termstr.valid_fmts = valid;
+}
+
 /* XXX may need to modify in the future? */
 void
 canonify_r(struct object **op)
@@ -224,32 +340,8 @@ canonify_r(struct object **op)
 			canonify_r(&o->u.e.e.group);
 			break;
 		case T_TERMSTR:
-			while (o->next && o->next->type == T_TERMSTR &&
-			    o->u.e.repetition.lo == 1 && o->u.e.repetition.hi == 1 &&
-			    o->next->u.e.repetition.lo == 1 && o->next->u.e.repetition.hi == 1 &&
-			    ((o->u.e.e.termstr.flags & F_CASESENSITIVE) ==
-			     (o->next->u.e.e.termstr.flags & F_CASESENSITIVE))) {
-				int len = strlen(o->u.e.e.termstr.str) + strlen(o->next->u.e.e.termstr.str);
-				char *p = malloc(len + 1);
-				strcpy(p, o->u.e.e.termstr.str);
-				strcat(p, o->next->u.e.e.termstr.str);
-				free(o->u.e.e.termstr.str);
-				o->u.e.e.termstr.str = p;
-				/* XXX leak o->next */
-				o->next = o->next->next;
-			}
-			if (o->u.e.e.termstr.flags & F_CASESENSITIVE) {
-				int anybad = 0;
-				char *p;
-				for (p = o->u.e.e.termstr.str; *p; p++) {
-					if (isalpha(*p) || *p == '"' || !isprint(*p)) {
-						anybad = 1;
-						break;
-					}
-				}
-				if (anybad == 0)
-					o->u.e.e.termstr.flags &= ~F_CASESENSITIVE;
-			}
+			canonify_str(o);
+			break;
 		case T_TERMRANGE:
 		case T_PROSE:
 		default:
@@ -299,6 +391,87 @@ printobj(object *o, int tflag)
  * possible repetition of 0.
  */
 #define NOBRACKET(o)	((o->next == NULL) && (o->u.e.repetition.lo == 0))
+
+/* print a string in one of the ABNF quoted string formats */
+static void
+printstr_quoted(char *str, t_tsfmts tsfmt)
+{
+	char *prefix;
+	/* in the case where more than one fmt is set, choose the most preferable */
+	tsfmt = F_TSFMT_PREFERRED(tsfmt);
+
+	switch (tsfmt) {
+	  case F_TSFMT_Q:
+		prefix = "";
+		break;	
+	  case F_TSFMT_QI:
+		prefix = "%i";
+		break;	
+	  case F_TSFMT_QS:
+		prefix = "%s";
+		break;	
+	  default:
+		prefix = "";
+		str = "<<< ERROR >>>";
+		break;
+	}
+	printf("%s" "\"%s\"", prefix, (str ? str : "<<< NULL >>>"));
+}
+
+/* print a string in one of the ABNF binary string formats */
+static void
+printstr_binary(char *str, int tsfmt)
+{
+	char *sep;
+	char *ps_fmt;
+	unsigned char *p = (unsigned char*)str;
+
+	/* in the case where more than one fmt is set, choose the most preferable */
+	tsfmt = F_TSFMT_PREFERRED(tsfmt);
+
+	switch (tsfmt) {
+	  /* Should be one of the binary formats. If not, use X */
+	  case F_TSFMT_X:
+	  default:
+		sep = "%x";
+		ps_fmt = "%s%02X";
+		break;
+	  case F_TSFMT_D:
+		sep = "%d";
+		ps_fmt = "%s%d";
+		break;
+	  case F_TSFMT_B:
+		sep = "%b";
+		ps_fmt = NULL; /* marker */
+		break;
+	}
+	if (p && *p) {
+		while(*p) {
+			int c = *p++;
+			if (ps_fmt) {
+				printf(ps_fmt, sep, c);
+			} else {
+				/* print binary - printf can't on its own */
+				char bits[8+1];
+				char *bp;
+				int b;
+				bp = &bits[sizeof(bits)];
+				*--bp = 0;
+				for (b=0; b < sizeof(bits)-1; b++) {
+					*--bp = (c & 1) + '0';
+					c >>= 1;
+					if (c == 0) break; /* remove for leading zeros */
+				}
+				printf("%s%s", sep, bp);
+			}
+			sep = ".";
+		}
+	} else {
+		/* print something valid for bad binary strings */
+		/* (not sure it is possible to get here) */
+		printf("%s", p ? "\"\"" : "<<< NULL >>>");
+	}
+}
 
 static void
 printobj_r(object *o, int parenttype, int tflag)
@@ -359,22 +532,20 @@ printobj_r(object *o, int parenttype, int tflag)
 			if (tflag)
 				printf("{TERMSTR}");
 			printrep(&o->u.e.repetition);
-			if (o->u.e.e.termstr.flags & F_CASESENSITIVE) {
-				unsigned char *p = (unsigned char*)o->u.e.e.termstr.str;
-				char sep;
-				int allprintable = 1;
-				printf("%%");
-				sep = 'x';
-				while (*p) {
-					if (!isgraph(*p)) allprintable = 0;
-					printf("%c%02X", sep, *p++);
-					sep = '.';
-				}
-				if (c2flag && allprintable)
-					printf(" ; %s\n", o->u.e.e.termstr.str);
+			if (o->u.e.e.termstr.fmt & M_TSFMT_QUOTED) {
+				printstr_quoted(o->u.e.e.termstr.str, o->u.e.e.termstr.fmt);
 			} else {
-				printf("%c%s%c", '"', o->u.e.e.termstr.str, '"');
-			}
+				printstr_binary(o->u.e.e.termstr.str, o->u.e.e.termstr.fmt);
+				if (c2flag) {
+					/* if it can be printed as a string, do so as a comment */
+					t_tsfmts qfmt = (o->u.e.e.termstr.valid_fmts & M_TSFMT_QUOTED);
+					if (qfmt) {
+						printf(" ; ");
+						printstr_quoted(o->u.e.e.termstr.str, qfmt);
+						printf("\n");
+					}
+				}
+			}	
 			break;
 		case T_TERMRANGE:
 			if (tflag)
