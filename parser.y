@@ -125,11 +125,11 @@ rule:	recover RULENAME { defline = mylineno; } definedas rulerest {
 			}
 			if (r->rule) {
 				mywarn(MYERROR, "Rule %s was already defined on line %d of %s", $2,
-               r->line, (r->file? r->file : "stdin"));
+				       r->line, (r->file? r->file : "stdin"));
 			} else {
 				r->name = $2;
 				r->line = defline;
-        r->file = input_file;
+				r->file = input_file;
 				r->rule = $5;
 				if (r->next != rules) {
 					/* unlink r from where it is and move to the end */
