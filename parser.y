@@ -427,9 +427,9 @@ charval_action(char *str, t_tsfmts fmt)
 	} else {
 		o = new_termstr(str, fmt);
 	}
-	if ((fmt & M_TSFMT_RFC7405) && !opt_rfc7405) {
+	if ((fmt & M_TSFMT_RFC7405) && opt_rfc7405 <= 0) {
 		char *fs = fmt & F_TSFMT_QS ? "%s" : "%i";
-		mywarn(MYWARNING,
+		mywarn(opt_rfc7405 == 0 ? MYWARNING: MYERROR,
 			"%s\"...\" requires use of RFC7405", fs);
 	}
 	return o;

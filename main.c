@@ -93,8 +93,8 @@ typedef struct {
 } t_option;
 
 t_option OPTIONS[] = {
-	{"RFC7405",  &opt_rfc7405, 1, "Allow %s and %i prefixes on strings. (default)"},
-	{"~RFC7405", &opt_rfc7405, 0, "Disallow %s and %i prefixes on strings."},
+	{"RFC7405",  &opt_rfc7405, 1, "Allow %s and %i prefixes on strings."},
+	{"~RFC7405", &opt_rfc7405, -1, "Disallow %s and %i prefixes on strings."},
 	{NULL, NULL, 0, NULL}
 };
 
@@ -308,7 +308,8 @@ canonify_str(struct object *o)
 	if (fmt & F_TSFMT_X) { /* policy to only do this for hex strings */
 		t_tsfmts pref;
 		t_tsfmts prefs = M_TSFMT_ALL;
-		if (!opt_rfc7405) prefs &= ~ M_TSFMT_RFC7405;
+		if (opt_rfc7405 <= 0)
+			prefs &= ~ M_TSFMT_RFC7405;
 		for (pref = F_TSFMT_PREFERRED(prefs); prefs; pref <<= 1) { 
 			if ((valid & pref) && (prefs & pref)) {
 				fmt = pref;
