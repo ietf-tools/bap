@@ -17,7 +17,14 @@ if (param("abnf")) {
 	my ( $prepped, $tmpprepped ) = mkstemps( "/tmp/abnf-preppedXXXXXX", ".txt" );
 	print $orig $abnf, "\n";
 	close($orig);
-	open(ERRORS, "@WEBBINDIR@/bap < $tmpabnf 2>&1 >$tmpparsed |");
+	my $rfc7405 = param("rfc7405");
+	my $rfc7405arg = "";
+	if ($rfc7405 eq "expected") {
+		$rfc7405arg = "-o RFC7405";
+	} elsif ($rfc7405 eq "no") {
+		$rfc7405arg = "-o ~RFC7405";
+	}
+	open(ERRORS, "@WEBBINDIR@/bap $rfc7405arg < $tmpabnf 2>&1 >$tmpparsed |");
 	my @errors = <ERRORS>;
 	close(ERRORS);
 	if (@errors) {
@@ -82,6 +89,8 @@ if (param("abnf")) {
 }
 print hr, start_form, p("Enter ABNF Here:");
 print textarea('abnf', '', 20, 80);
+print br;
+print radio_group(-name=>'rfc7405', -values=>['expected','warn','no'], -default=>'warn', -labels=>{'expected'=>'This uses RFC7405', 'warn'=>'Warn if this uses RFC7405', 'no'=>'Using RFC7405 is an error'}, -columns=>1, -colheaders=>['Uses RFC7405?']);
 print br, submit, end_form, hr;
 print end_html, "\n";
 
