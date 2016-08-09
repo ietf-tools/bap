@@ -2882,7 +2882,7 @@ ac_config_headers="$ac_config_headers config.h"
 
 ac_config_files="$ac_config_files Makefile"
 
-ac_config_files="$ac_config_files tests/baptest"
+ac_config_files="$ac_config_files tests/baptest abnf.cgi"
 
 cat >confcache <<\_ACEOF
 # This file is a shell script that caches the results of configure
@@ -3576,6 +3576,7 @@ do
     "config.h") CONFIG_HEADERS="$CONFIG_HEADERS config.h" ;;
     "Makefile") CONFIG_FILES="$CONFIG_FILES Makefile" ;;
     "tests/baptest") CONFIG_FILES="$CONFIG_FILES tests/baptest" ;;
+    "abnf.cgi") CONFIG_FILES="$CONFIG_FILES abnf.cgi" ;;
 
   *) as_fn_error $? "invalid argument: \`$ac_config_target'" "$LINENO" 5;;
   esac
@@ -4124,6 +4125,7 @@ $as_echo "$as_me: $ac_file is unchanged" >&6;}
 
   case $ac_file$ac_mode in
     "tests/baptest":F) chmod +x tests/baptest ;;
+    "abnf.cgi":F) chmod +x tests/baptest ;;
 
   esac
 done # for ac_tag
