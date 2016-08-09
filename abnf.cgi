@@ -4,8 +4,6 @@
 # Sooooo many things to want to fix up.
 # Bill Fenner <fenner@fenron.com> 23 June 2004
 #
-# $Id:$
-#
 use CGI qw/:standard/;
 
 print header;

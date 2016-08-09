@@ -1,6 +1,5 @@
 /*
  * Bill's ABNF Parser
- * $Id$
  */
 
 struct range {

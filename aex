@@ -3,8 +3,6 @@
 # Heuristics to extract ABNF from an I-D or RFC.
 # Bill Fenner <fenner@fenron.com> 26 September 2004
 #
-# $Id:$
-#
 use strict;
 my($inabnf, $indent, $curindent, $spaces, $newrule);
 my($blanklines, $top);

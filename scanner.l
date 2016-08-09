@@ -36,9 +36,6 @@
 #include "common.h"
 #include "y.tab.h"
 
-static const char rcsid[] =
- "$Id$";
-
 int mylineno = 1;
 int mycolumn = 0;
 int myerrors = 0;

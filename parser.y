@@ -41,9 +41,6 @@
 
 extern int opt_rfc7405;	/* (-o RFC7405) */
 
-static const char rcsid[] =
- "$Id$";
-
 extern int mylineno, mycolumn, myerrors;
 
 int defline;

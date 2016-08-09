@@ -38,8 +38,6 @@
 #include <string.h>
 #include "common.h"
 
-static const char rcsid[] =
-  "$Id$";
 static const char versionstring[] = PACKAGE_VERSION;
 
 static void printobj_r(object *, int, int);
