@@ -25,3 +25,7 @@ clean:
 
 test: bap
 	@make -C tests test
+
+install-web:
+	@[ "@WEBBINDIR@" != "." ] || ( echo "use configure --with-web-bin-dir" && false )
+	@install bap prep htmlwdiff @WEBBINDIR@

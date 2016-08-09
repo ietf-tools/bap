@@ -1,39 +1,39 @@
 #!/usr/bin/perl
 #
 # Quick hack to get my abnf parser on the web.
-# Sooooo many things to want to fix up.
 # Bill Fenner <fenner@fenron.com> 23 June 2004
 #
 use CGI qw/:standard/;
+use File::Temp;
+use strict;
 
 print header;
 print start_html("Bill's ABNF Parser"), h1("Bill's ABNF Parser");
 if (param("abnf")) {
-	$abnf = param("abnf");
+	my $abnf = param("abnf");
 	$abnf =~ s/\r\n/\n/gm;	# HTTP might use \r\n line seperators
-	$tmpabnf = "/tmp/abnf1";
-	$tmpparsed = "/tmp/abnf2";
-	$tmpprepped = "/tmp/abnf3";
-	open(ORIG, ">/tmp/abnf1");
-	print ORIG $abnf, "\n";
-	close(ORIG);
-	open(ERRORS, "/home/fenner/bin/bap < $tmpabnf 2>&1 >$tmpparsed |");
-	@errors = <ERRORS>;
+	my ( $orig, $tmpabnf ) = mkstemps( "/tmp/abnf-origXXXXXX", ".txt" );
+	my ( $parsed, $tmpparsed ) = mkstemps( "/tmp/abnf-parsedXXXXXX", ".txt" );
+	my ( $prepped, $tmpprepped ) = mkstemps( "/tmp/abnf-preppedXXXXXX", ".txt" );
+	print $orig $abnf, "\n";
+	close($orig);
+	open(ERRORS, "@WEBBINDIR@/bap < $tmpabnf 2>&1 >$tmpparsed |");
+	my @errors = <ERRORS>;
 	close(ERRORS);
 	if (@errors) {
 		print h1("Errors during parsing:");
 		print p("Errors are noted by line number and column, e.g. line:column: Something bad.");
-		@lines = split(/\n/, $abnf);
-		$numlines = @lines;
-		$numwidth = length(sprintf("%d", $numlines));
+		my @lines = split(/\n/, $abnf);
+		my $numlines = @lines;
+		my $numwidth = length(sprintf("%d", $numlines));
 		# XXX I don't think "use CGI" wants me to output my own markup
 		print "<pre>\n";
-		foreach $error (@errors) {
+		foreach my $error (@errors) {
 			if ($error =~ /^(\d+):(\d+):/) {
-				$line = $1;
-				$col = $2;
+				my $line = $1;
+				my $col = $2;
 				if ($lines[$line - 1]) {
-					$lastline = $line;
+					my $lastline = $line;
 					# Column 0 might mean the end of the
 					# previous line, so make sure that
 					# we get that.
@@ -52,9 +52,9 @@ if (param("abnf")) {
 			}
 			print htmlify($error);
 			if ($error =~ /on line (\d+)/) {
-				$line = $1;
+				my $line = $1;
 				# This one is the beginning of the rule.
-				$lastline = $line;
+				my $lastline = $line;
 				while ($lastline < $#lines && $lines[$lastline] =~ /^(\s|$)/) {
 					$lastline++;
 				}
@@ -70,12 +70,15 @@ if (param("abnf")) {
 		print h1("No errors during parsing.");
 	}
 	# XXX
-	system("/home/fenner/bin/prep $tmpabnf > $tmpprepped");
+	system("@WEBBINDIR@/prep $tmpabnf > $tmpprepped");
 	print h1("Differences between original and Bill's \"canonical\":");
 	print p("There should be very few differences here.  The \"canonical\" output may change 0*1(foo) to [foo], or other equivalences.  If there are any parenthesis added, examine carefully what they surround, as they represent the default concatenation near an alternation which may not not be what you mean.  The original has been processed to facilitate comparison; the processing shouldn't change valid ABNF but can make certain invalid constructs look more invalid.");
-	open(DIFF, "/home/fenner/bin/htmlwdiff $tmpprepped $tmpparsed |");
+	open(DIFF, "@WEBDIFF@ $tmpprepped $tmpparsed |");
 	print <DIFF>;
 	close(DIFF);
+	foreach my $file ( $tmpabnf, $tmpparsed, $tmpprepped ) {
+		unlink( $file );
+	}
 }
 print hr, start_form, p("Enter ABNF Here:");
 print textarea('abnf', '', 20, 80);
