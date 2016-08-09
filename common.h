@@ -56,7 +56,8 @@ typedef struct object {
 		} alternation;
 		struct {
 			struct range repetition;
-      int   islist; /* jre */
+			int islist;	/* is there a better mechanism to flag this? */
+					/* does this really go inside "struct range"? */
 			union {
 			    struct {
 				    char *name;	/* for forward ref. */

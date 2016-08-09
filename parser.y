@@ -273,7 +273,7 @@ repetition:
 	;
 
 list:
-	LIST element	{
+	LIST element		{
 				$$ = $2;
 				if ($$->u.e.repetition.lo != 0)
 					$$->u.e.repetition.lo = $1.lo;
@@ -282,11 +282,11 @@ list:
 					mywarn(MYERROR, "List range swapped, should be min*max");
 				if ($1.hi == 0)
 					mywarn(MYFYI, "absolute list count of zero means this element may not occur at all");
-        if ($1.lo != 0 && $1.lo != 1 && $1.lo != -1)
+				if ($1.lo != 0 && $1.lo != 1 && $1.lo != -1)
 					mywarn(MYERROR, "List range min must be 0 or 1");
-        if ($1.hi != -1)
+				if ($1.hi != -1)
 					mywarn(MYERROR, "List range max must be infinity");
-        $$->u.e.islist = 1;
+				$$->u.e.islist = 1;
 				}
 	| LIST cwsp		{
 				mywarn(MYERROR, "No whitespace allowed between list and element.");

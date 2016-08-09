@@ -500,101 +500,101 @@ printobj_r(object *o, int parenttype, int tflag)
 			if (tflag)
 				printf("{RULE}");
 			if (o->u.e.islist) {
-        if (o->u.e.repetition.lo == 0) {
-          printf("( [ *LWS ");
-  			  if (o->u.e.e.rule.rule) {
-  				  printf("%s", o->u.e.e.rule.rule->name);
-  				  o->u.e.e.rule.rule->used = 1;
-  			  }
-          else {
-  				  printf("%s", o->u.e.e.rule.name);
-          }
-          printf(" ] *( *LWS \",\" *LWS ");
-  			  if (o->u.e.e.rule.rule) {
-  				  printf("%s", o->u.e.e.rule.rule->name);
-  				  o->u.e.e.rule.rule->used = 1;
-  			  }
-          else {
-  				  printf("%s", o->u.e.e.rule.name);
-          }
-          printf(" ) )");
-        }
-        else if (o->u.e.repetition.lo == 1) {
-          printf("( *LWS ");
-  			  if (o->u.e.e.rule.rule) {
-  				  printf("%s", o->u.e.e.rule.rule->name);
-  				  o->u.e.e.rule.rule->used = 1;
-  			  }
-          else {
-  				  printf("%s", o->u.e.e.rule.name);
-          }
-          printf(" *( *LWS \",\" *LWS ");
-  			  if (o->u.e.e.rule.rule) {
-  				  printf("%s", o->u.e.e.rule.rule->name);
-  				  o->u.e.e.rule.rule->used = 1;
-  			  }
-          else {
-  				  printf("%s", o->u.e.e.rule.name);
-          }
-          printf(" ) )");
-        }
-        else {
-          printf("TODO: something is wrong");
-        } 
-      }
-      else {
-        printrep(&o->u.e.repetition);
-			  if (o->u.e.e.rule.rule) {
-				  printf("%s", o->u.e.e.rule.rule->name);
-				  o->u.e.e.rule.rule->used = 1;
-			  }
-        else {
-				  printf("%s", o->u.e.e.rule.name);
-        }
-      }
+				if (o->u.e.repetition.lo == 0) {
+					printf("( [ *LWS ");
+					if (o->u.e.e.rule.rule) {
+						printf("%s", o->u.e.e.rule.rule->name);
+						o->u.e.e.rule.rule->used = 1;
+					}
+					else {
+						printf("%s", o->u.e.e.rule.name);
+					}
+					printf(" ] *( *LWS \",\" *LWS ");
+					if (o->u.e.e.rule.rule) {
+						printf("%s", o->u.e.e.rule.rule->name);
+						o->u.e.e.rule.rule->used = 1;
+					}
+					else {
+						printf("%s", o->u.e.e.rule.name);
+					}
+					printf(" ) )");
+				}
+				else if (o->u.e.repetition.lo == 1) {
+					printf("( *LWS ");
+					if (o->u.e.e.rule.rule) {
+						printf("%s", o->u.e.e.rule.rule->name);
+						o->u.e.e.rule.rule->used = 1;
+					}
+					else {
+						printf("%s", o->u.e.e.rule.name);
+					}
+					printf(" *( *LWS \",\" *LWS ");
+					if (o->u.e.e.rule.rule) {
+						printf("%s", o->u.e.e.rule.rule->name);
+						o->u.e.e.rule.rule->used = 1;
+					}
+					else {
+						printf("%s", o->u.e.e.rule.name);
+					}
+					printf(" ) )");
+				}
+				else {
+					printf("TODO: something is wrong");
+				} 
+			}
+			else {
+				printrep(&o->u.e.repetition);
+				if (o->u.e.e.rule.rule) {
+					printf("%s", o->u.e.e.rule.rule->name);
+					o->u.e.e.rule.rule->used = 1;
+				}
+				else {
+					printf("%s", o->u.e.e.rule.name);
+				}
+			}
  			break;
 		case T_GROUP:
 			if (tflag)
 				printf("{GROUP}");
-      if (o->u.e.islist) {
-        if (o->u.e.repetition.lo == 0) {
-          printf("( [ *LWS ");
-          printobj_r(o->u.e.e.group, o->type, tflag);
-          printf(" ] *( *LWS \",\" *LWS ");
-          printobj_r(o->u.e.e.group, o->type, tflag);
-          printf(" ) )");
-        }
-        else if (o->u.e.repetition.lo == 1) {
-          printf("( *LWS ");
-          printobj_r(o->u.e.e.group, o->type, tflag);
-          printf(" *( *LWS \",\" *LWS ");
-          printobj_r(o->u.e.e.group, o->type, tflag);
-          printf(" ) )");
-        }
-        else {
-          printf("TODO: something is wrong");
-        } 
-      }
-      else {
-  			if (o->u.e.repetition.lo == 0 &&
-  			    o->u.e.repetition.hi == 1) {
-  				if (!NOBRACKET(o->u.e.e.group))
-  					printf("[ ");
-  			} else {
-  				printrep(&o->u.e.repetition);
-  				if (!NOPAREN(o->u.e.e.group))
-  					printf("( ");
-  			}
-  			printobj_r(o->u.e.e.group, o->type, tflag);
-  			if (o->u.e.repetition.lo == 0 &&
-  			    o->u.e.repetition.hi == 1) {
-  				if (!NOBRACKET(o->u.e.e.group))
-  					printf(" ]");
-  			} else {
-  				if (!NOPAREN(o->u.e.e.group))
-  					printf(" )");
-  			}
-      }
+			if (o->u.e.islist) {
+				if (o->u.e.repetition.lo == 0) {
+					printf("( [ *LWS ");
+					printobj_r(o->u.e.e.group, o->type, tflag);
+					printf(" ] *( *LWS \",\" *LWS ");
+					printobj_r(o->u.e.e.group, o->type, tflag);
+					printf(" ) )");
+				}
+				else if (o->u.e.repetition.lo == 1) {
+					printf("( *LWS ");
+					printobj_r(o->u.e.e.group, o->type, tflag);
+					printf(" *( *LWS \",\" *LWS ");
+					printobj_r(o->u.e.e.group, o->type, tflag);
+					printf(" ) )");
+				}
+				else {
+					printf("TODO: something is wrong");
+				} 
+			}
+			else {
+				if (o->u.e.repetition.lo == 0 &&
+				    o->u.e.repetition.hi == 1) {
+					if (!NOBRACKET(o->u.e.e.group))
+						printf("[ ");
+				} else {
+					printrep(&o->u.e.repetition);
+					if (!NOPAREN(o->u.e.e.group))
+						printf("( ");
+				}
+				printobj_r(o->u.e.e.group, o->type, tflag);
+				if (o->u.e.repetition.lo == 0 &&
+				    o->u.e.repetition.hi == 1) {
+					if (!NOBRACKET(o->u.e.e.group))
+						printf(" ]");
+				} else {
+					if (!NOPAREN(o->u.e.e.group))
+						printf(" )");
+				}
+			}
 			break;
 		case T_TERMSTR:
 			if (tflag)
