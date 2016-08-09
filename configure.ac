@@ -3,7 +3,7 @@ dnl
 dnl Boy does modern autoconf make it hard to have a small ./configure.
 dnl Sorry that it's so huge for almost no configuration.
 
-AC_INIT(bap, 1.3)
+AC_INIT(bap, 1.4)
 
 AC_PROG_CC
 AC_PROG_YACC
