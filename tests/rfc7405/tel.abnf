@@ -1,0 +1,50 @@
+;
+; TEL URI ABNF (RFC3966 rather than original RFC2806)
+; (All rulenames prefixed with 'TEL-' to make them unique)
+;
+
+TEL-telephone-uri        = "tel:" TEL-telephone-subscriber
+TEL-telephone-subscriber = TEL-global-number / TEL-local-number
+TEL-global-number        = TEL-global-number-digits *TEL-par
+TEL-local-number         = TEL-local-number-digits *TEL-par TEL-context *TEL-par
+TEL-par                  = TEL-parameter / TEL-extension / TEL-isdn-subaddress
+TEL-isdn-subaddress      = ";isub=" 1*TEL-uric
+TEL-extension            = ";ext=" 1*TEL-phonedigit
+TEL-context              = ";phone-context=" TEL-descriptor
+TEL-descriptor           = TEL-domainname / TEL-global-number-digits
+TEL-global-number-digits = "+" *TEL-phonedigit DIGIT *TEL-phonedigit
+
+; (PHK) CORRECTING ABNF ERROR
+; TEL-local-number-digits  =
+;       *TEL-phonedigit-hex (HEXDIG / "*" / "#")*TEL-phonedigit-hex
+TEL-local-number-digits  =
+      (*TEL-phonedigit-hex) (HEXDIG / "*" / "#") (*TEL-phonedigit-hex)
+; END CORRECTION
+
+TEL-domainname           = *( TEL-domainlabel "." ) TEL-toplabel [ "." ]
+TEL-domainlabel          = TEL-alphanum
+                          / TEL-alphanum *( TEL-alphanum / "-" ) TEL-alphanum
+TEL-toplabel             = ALPHA / ALPHA *( TEL-alphanum / "-" ) TEL-alphanum
+TEL-parameter            = ";" TEL-pname ["=" TEL-pvalue ]
+TEL-pname                = 1*( TEL-alphanum / "-" )
+TEL-pvalue               = 1*TEL-paramchar
+TEL-paramchar            = TEL-param-unreserved / TEL-unreserved / TEL-pct-encoded
+TEL-unreserved           = TEL-alphanum / TEL-mark
+TEL-mark                 = "-" / "_" / "." / "!" / "~" / "*" /
+                          "'" / "(" / ")"
+TEL-pct-encoded          = "%" HEXDIG HEXDIG
+TEL-param-unreserved     = "[" / "]" / "/" / ":" / "&" / "+" / "$"
+TEL-phonedigit           = DIGIT / [ TEL-visual-separator ]
+TEL-phonedigit-hex       = HEXDIG / "*" / "#" / [ TEL-visual-separator ]
+TEL-visual-separator     = "-" / "." / "(" / ")"
+TEL-alphanum             = ALPHA / DIGIT
+TEL-reserved             = ";" / "/" / "?" / ":" / "@" / "&" /
+                          "=" / "+" / "$" / ","
+TEL-uric                 = TEL-reserved / TEL-unreserved / TEL-pct-encoded
+
+;
+; Expose key rules from TEL with their original names
+;
+
+telephone-subscriber     = TEL-telephone-subscriber
+global-number            = TEL-global-number

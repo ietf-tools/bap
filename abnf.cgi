@@ -82,6 +82,7 @@ if (param("abnf")) {
 print hr, start_form, p("Enter ABNF Here:");
 print textarea('abnf', '', 20, 80);
 print br, submit, end_form, hr;
+print end_html, "\n";
 
 sub htmlify($) {
 	my($line) = shift;

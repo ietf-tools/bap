@@ -35,8 +35,11 @@
 #include <stdlib.h>
 #include <stdarg.h>
 #include <string.h>
+#include <ctype.h>
 
 #include "common.h"
+
+extern int opt_rfc7405;	/* (-o RFC7405) */
 
 static const char rcsid[] =
  "$Id$";
@@ -59,6 +62,9 @@ int *yynp = NULL;
 int pipewarn = 0;
 
 object *newobj(int);
+object *new_termstr(char *, t_tsfmts);
+object *charval_action(char *, t_tsfmts);
+
 int yyerror(char *);
 int yylex(void);
 %}
@@ -70,11 +76,10 @@ int yylex(void);
 	int retval;
 }
 
-%token <string> CHARVAL PROSEVAL BINVAL DECVAL HEXVAL RULENAME
+%token <string> CHARVAL CHARVAL_S CHARVAL_I PROSEVAL BINVAL DECVAL HEXVAL RULENAME
 %token <range> BINVALRANGE DECVALRANGE HEXVALRANGE REPEAT LIST
 %token CWSP EQSLASH CRLF
 
-%type <string> numval
 %type <range> numvalrange
 %type <object> element group option repetition list elements
 %type <object> rulerest
@@ -111,20 +116,21 @@ rule:	recover RULENAME { defline = mylineno; } definedas rulerest {
 			if ($4) {
 				mywarn(MYERROR, "Rule %s does not yet exist; treating /= as =", $2);
 			}
-			if (r->name && strcmp(r->name, $2))
+			if (r->name && strcmp(r->name, $2)) {
 				if (r->rule)
 					mywarn(MYERROR, "Rule %s previously defined as %s on line %d",
 						$2, r->name, r->line);
 				else
 					mywarn(MYWARNING, "rule %s previously referred to as %s",
 						$2, r->name);
-			if (r->rule)
+			}
+			if (r->rule) {
 				mywarn(MYERROR, "Rule %s was already defined on line %d of %s", $2,
-               r->line, (r->file? r->file : "stdin"));
-			else {
+				       r->line, (r->file? r->file : "stdin"));
+			} else {
 				r->name = $2;
 				r->line = defline;
-        r->file = input_file;
+				r->file = input_file;
 				r->rule = $5;
 				if (r->next != rules) {
 					/* unlink r from where it is and move to the end */
@@ -288,11 +294,6 @@ list:
 				}
 	;
 
-numval:   BINVAL
-	| DECVAL
-	| HEXVAL
-	;
-
 numvalrange:
 	  BINVALRANGE
 	| DECVALRANGE
@@ -310,21 +311,25 @@ element:
 	| group	
 	| option
 	| CHARVAL		{
-				char *p = $1;
-				if (*$1)
-					p += strlen($1) - 1;
-				if (*p == '\n' || *p == '\r') {
-					mywarn(MYERROR, "unterminated quoted-string");
-					YYERROR;
+				$$ = charval_action($1, F_TSFMT_Q);
+				if (!$$) YYERROR;
 				}
-				$$ = newobj(T_TERMSTR);
-				$$->u.e.e.termstr.str = $1;
-				$$->u.e.e.termstr.flags = 0;
+	| CHARVAL_I		{
+				$$ = charval_action($1, F_TSFMT_QI);
+				if (!$$) YYERROR;
 				}
-	| numval		{
-				$$ = newobj(T_TERMSTR);
-				$$->u.e.e.termstr.str = $1;
-				$$->u.e.e.termstr.flags = F_CASESENSITIVE;
+	| CHARVAL_S		{
+				$$ = charval_action($1, F_TSFMT_QS);
+				if (!$$) YYERROR;
+				}
+	| BINVAL		{
+				$$ = new_termstr($1, F_TSFMT_B);
+				}
+	| DECVAL		{
+				$$ = new_termstr($1, F_TSFMT_D);
+				}
+	| HEXVAL		{
+				$$ = new_termstr($1, F_TSFMT_X);
 				}
 	| numvalrange		{
 				$$ = newobj(T_TERMRANGE);
@@ -416,6 +421,64 @@ newobj(int type)
 			o->u.e.repetition.lo = 1;
 			o->u.e.repetition.hi = 1;
 			break;
+	}
+	return o;
+}
+
+object *
+new_termstr(char *str, t_tsfmts fmt)
+{
+	object *o;
+	t_tsfmts valid;
+	char *p;
+	char c;
+
+	/* tidy up the arguments, just to be safe */
+	/* ensure fmt includes precisely one format - the preferred one */
+	fmt = F_TSFMT_PREFERRED(fmt & M_TSFMT_ALL);
+	if (fmt == 0) fmt = F_TSFMT_B; /* default for worst case - something that will be noticed */
+
+	o = newobj(T_TERMSTR);
+	o->u.e.e.termstr.str = str;
+
+	/* determine valid flags */
+	valid = M_TSFMT_ALL;
+	for (p=str; *p; p++) {
+		c = *p;
+		if (c < ' ' || c == '"' || c > '~') {
+			valid &= ~M_TSFMT_QUOTED;
+		} else if (isalpha(c)) {
+			if (fmt & M_TSFMT_SENSITIVE) {
+				valid &= M_TSFMT_SENSITIVE;
+			} else { /* insensitive */
+				valid &= M_TSFMT_INSENSITIVE; 
+			}
+		}
+	}
+	if (valid == 0) valid = fmt; /* shouldn't happen - just in case */
+
+	/* set formats */
+	o->u.e.e.termstr.fmt = fmt;
+	o->u.e.e.termstr.valid_fmts = valid;
+	return o;
+}
+
+object *
+charval_action(char *str, t_tsfmts fmt)
+{
+	char *p = str;
+	object *o;
+	if (*str) p += strlen(str) - 1;
+	if (*p == '\n' || *p == '\r') {
+		mywarn(MYERROR, "unterminated quoted-string");
+		o = NULL;
+	} else {
+		o = new_termstr(str, fmt);
+	}
+	if ((fmt & M_TSFMT_RFC7405) && !opt_rfc7405) {
+		char *fs = fmt & F_TSFMT_QS ? "%s" : "%i";
+		mywarn(MYWARNING,
+			"%s\"...\" requires use of RFC7405", fs);
 	}
 	return o;
 }
