@@ -1,0 +1,12 @@
+tests/baptest
+Makefile
+abnf.cgi
+bap
+config.h
+config.log
+config.status
+parser.c
+scanner.c
+y.output
+y.tab.h
+*.o
