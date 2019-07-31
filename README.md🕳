@@ -1,0 +1,2 @@
+# bap
+An ABNF parser, focusing on human-friendly error messages.
