@@ -111,7 +111,7 @@ rule:	recover RULENAME { defline = mylineno; } definedas rulerest {
 
 		if ($4 == 0 || r->name == NULL || r->rule == NULL) {	/* = */
 			if ($4) {
-				mywarn(MYERROR, "Rule %s does not yet exist; treating /= as =", $2);
+				mywarn(MYERROR, "Rule %s does not yet exist; treating =/ as =", $2);
 			}
 			if (r->name && strcmp(r->name, $2)) {
 				if (r->rule)
