@@ -1,2 +1,0 @@
-ABNF = ALPHA / BIT / CHAR / CTL / 
-       DQUOTE / HEXDIG / LWSP / OCTET / VCHAR

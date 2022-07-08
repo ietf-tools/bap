@@ -1,3 +1,0 @@
-ABNF = test
-
-test = "test"
