@@ -5,10 +5,80 @@
 #           mktemp (in the FreeBSD base system so I don't know where to
 #		get it if you don't have it)
 #
-a1=`mktemp -t htmlwdiff1`
-a2=`mktemp -t htmlwdiff2`
-sed -e 's/&/&amp;/g' -e 's/</\&lt;/g' -e 's/>/\&gt;/g' $1 > $a1
-sed -e 's/&/&amp;/g' -e 's/</\&lt;/g' -e 's/>/\&gt;/g' $2 > $a2
+# Henrik's functions
+
+# ----------------------------------------------------------------------
+# Utility to find an executable
+# ----------------------------------------------------------------------
+
+lookfor() {
+     default="$1"; shift
+     for b in "$@"; do
+	found=`type -p "$b" 2>/dev/null`
+	if [ -n "$found" ]; then
+	    if [ -x "$found" ]; then
+		echo "$found"
+		return
+	    fi
+	fi
+     done
+     echo "$default"
+}
+
+AWK=`lookfor gawk gawk nawk awk`
+#-----------------------------------------------------------------------
+#mktemp
+#-----------------------------------------------------------------------
+
+mktemp() {
+TMPFILE=$1.$$
+
+echo $TMPFILE
+}
+
+# ----------------------------------------------------------------------
+# Strip headers and footers, end-of-line whitespace and \r (CR)
+# ----------------------------------------------------------------------
+strip() {
+     $AWK '
+				{ gsub(/\r/, ""); }
+				{ gsub(/[ \t]+$/, ""); }
+
+/\[?[Pp]age [0-9ivx]+\]?[ \t]*$/{
+				  next;
+				}
+/^[ \t]*\f/			{ newpage=1; next; }
+/^ *Internet.Draft.+[0-9]+ *$/	{ newpage=1; next; }
+/^ *INTERNET.DRAFT.+[0-9]+ *$/	{ newpage=1; next; }
+/^RFC.+[0-9]+$/			{ newpage=1; next; }
+/^draft-[-a-z0-9_.]+.*[0-9][0-9][0-9][0-9]$/ { newpage=1; next; }
+/^[^ \t]/			{ sentence=1; }
+/[^ \t]/			{
+				   if (newpage) {
+				      if (sentence) {
+					 outline++; print "";
+				      }
+				   } else {
+				      if (haveblank) {
+					  outline++; print "";
+				      }
+				   }
+				   haveblank=0;
+				   sentence=0;
+				   newpage=0;
+				}
+/[.:][ \t]*$/			{ sentence=1; }
+/^[ \t]*$/			{ haveblank=1; next; }
+				{ outline++; print; }
+' $1
+}
+# ----------------------------------------------------------------------
+# Bill's code starts here
+# ----------------------------------------------------------------------
+a1=`mktemp  htmlwdiff1`
+a2=`mktemp  htmlwdiff2`
+strip $1 | sed -e 's/&/&amp;/g' -e 's/</\&lt;/g' -e 's/>/\&gt;/g' > $a1
+strip $2 | sed -e 's/&/&amp;/g' -e 's/</\&lt;/g' -e 's/>/\&gt;/g' > $a2
 # This was originally meant to create a portion of a page that
 # should be wrapped; however, it seems more common to just use it
 # to create a page, so create html wrapper.  With luck, you can remove
